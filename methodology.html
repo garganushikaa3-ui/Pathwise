@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Methodology, Scoring Algorithm & Limitations — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill fw-semibold mb-1">
+            System Architecture &amp; Ethics
+        </span>
+        <h2 class="fw-bold mb-1">Methodology, Scoring Formula &amp; Limitations</h2>
+        <p class="text-muted small mb-0">Complete mathematical and architectural transparency behind the PathWise decision-support system.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <!-- Section 1: Scoring Formula -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h4 class="fw-bold mb-3 text-navy"><i class="bi bi-calculator text-primary me-2"></i> 1. The Explainable Recommendation Formula</h4>
+                <p class="text-muted small mb-3">
+                    Unlike black-box machine learning approaches that cannot explain why a recommendation was made, PathWise implements a multi-criteria weighted utility model. Each career's final compatibility score is calculated as a normalized linear combination:
+                </p>
+
+                <div class="bg-dark text-white p-3 rounded-3 text-center my-3 font-monospace">
+                    Final Score = (w_interests &times; S_interests) + (w_skills &times; S_skills) + (w_tools &times; S_tools) + (w_education &times; S_education) + (w_preferences &times; S_preferences)
+                </div>
+
+                <p class="small text-muted mb-2">Subject to the constraint that all active weights are dynamically normalized to sum to unity:</p>
+                <div class="text-center font-monospace small mb-4">&sum; w_i = 1.0 (100%)</div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Factor</th>
+                                <th>Default Weight (w_i)</th>
+                                <th>Computation Logic</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Technical Interests</strong></td>
+                                <td><span class="badge bg-primary">30% (0.30)</span></td>
+                                <td>Set intersection of student-selected topics with the career's O*NET interest tags, normalized by the primary domain depth.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Reported Skills</strong></td>
+                                <td><span class="badge bg-primary">30% (0.30)</span></td>
+                                <td>Mapping of student ratings (0–5) against the career's top 8 essential skills. (Rating / 5.0) yields an individual sub-score.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Known Tools</strong></td>
+                                <td><span class="badge bg-teal text-white">15% (0.15)</span></td>
+                                <td>Proportion of industry-standard tools (e.g. Git, VS Code, SQL, Docker) recognized and used by the student.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Education Compatibility</strong></td>
+                                <td><span class="badge bg-teal text-white">15% (0.15)</span></td>
+                                <td>Evaluation of entry-level academic requirements against BCA / undergraduate Computer Applications curricula.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Work Preferences</strong></td>
+                                <td><span class="badge bg-warning text-dark">10% (0.10)</span></td>
+                                <td>Match on coding intensity (High, Moderate, Low), technical style (Analytical vs Creative), and collaboration mode.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info small py-2 mb-0">
+                    <i class="bi bi-info-circle me-1"></i> <strong>Configurable Choice Note:</strong> These weights represent proposed design choices tailored for early-stage BCA career exploration, not scientifically immutable constants. Students can adjust weights dynamically via the Priority Sliders in the recommendations and simulator modules.
+                </div>
+            </div>
+
+            <!-- Section 2: Missing Data Normalization -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h4 class="fw-bold mb-3 text-navy"><i class="bi bi-shield-check text-success me-2"></i> 2. Handling Missing Data Without Unfair Bias</h4>
+                <p class="text-muted small mb-2">
+                    A common failure mode in decision systems is assigning zero scores when a student omits non-mandatory fields, or inversely giving full credit for unverified claims.
+                </p>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li class="mb-2"><strong>Zero Credit for Unreported Skills:</strong> If a student has not learned a skill (Level 0), it is flagged as a learning gap rather than generating synthetic credit.</li>
+                    <li class="mb-2"><strong>Neutral Baseline for Omitted Preferences:</strong> If a student leaves work preference fields blank, the system applies a neutral default (0.50) without penalizing their existing academic skills.</li>
+                    <li class="mb-2"><strong>Weight Normalization:</strong> Adding optional factors (like salary or job outlook) automatically scales existing weights proportionally so the total score remains strictly bound between 0% and 100%.</li>
+                </ul>
+            </div>
+
+            <!-- Section 3: Readiness Meter Calculation -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h4 class="fw-bold mb-3 text-navy"><i class="bi bi-speedometer2 text-info me-2"></i> 3. Career Readiness Meter Criteria</h4>
+                <p class="text-muted small mb-3">
+                    PathWise rejects misleading labels such as "job ready" for undergraduate students. Instead, we use a transparent preparation scale:
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 bg-light border-top border-4 border-success h-100">
+                            <span class="badge bg-success mb-2">Score &ge; 72%</span>
+                            <h6 class="fw-bold mb-1">Better Prepared for Exploration</h6>
+                            <p class="small text-muted mb-0">Strong existing alignment in foundational syntax, known tools, and coursework. Ready to start building capstone projects.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 bg-light border-top border-4 border-primary h-100">
+                            <span class="badge bg-primary mb-2">Score 48% – 71%</span>
+                            <h6 class="fw-bold mb-1">Developing</h6>
+                            <p class="small text-muted mb-0">Demonstrates emerging aptitude but requires 2–3 targeted skills (e.g. SQL, Git, frameworks) to attain project proficiency.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 bg-light border-top border-4 border-warning h-100">
+                            <span class="badge bg-warning text-dark mb-2">Score &lt; 48%</span>
+                            <h6 class="fw-bold mb-1">Foundation to Build</h6>
+                            <p class="small text-muted mb-0">Early-stage interest where the student should first complete introductory coursework before undertaking advanced tasks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Data Sources & Attribution -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h4 class="fw-bold mb-3 text-navy"><i class="bi bi-database text-warning me-2"></i> 4. Verified Data Sources &amp; Attribution</h4>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li class="mb-3">
+                        <strong>O*NET Online (v28.0):</strong> Occupational skills, importance ratings, and tool classifications are extracted directly from the U.S. Department of Labor's O*NET database (SOC codes 15-xxxx series).
+                    </li>
+                    <li class="mb-3">
+                        <strong>U.S. Bureau of Labor Statistics (BLS):</strong> Median annual wage ($) and 10-year occupational projection percentages (2025–2035 National Employment Matrix Table 1.2) provide verified international labor indicators.
+                    </li>
+                    <li class="mb-0">
+                        <strong>India Tech Market Salary Benchmark:</strong> To prevent misleading students by displaying only high-denomination USD salaries, PathWise provides a separate, explicitly attributed India Tech Industry index in INR Lakhs Per Annum (LPA) reflecting typical entry-to-mid career compensation in major Indian tech hubs.
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 5: Ethical Limitations & Academic Disclaimers -->
+            <div class="card card-tech p-4 shadow-sm border-danger border-opacity-25 bg-white">
+                <h4 class="fw-bold mb-3 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> 5. Ethical Limitations &amp; Disclaimers</h4>
+                <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 small mb-3">
+                    <strong>Mandatory Academic Notice:</strong> PathWise is designed exclusively as an educational decision-support explorer for university students.
+                </div>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li class="mb-2"><strong>No Job Guarantee:</strong> Recommendation scores do not represent a probability of being hired or succeeding in any career.</li>
+                    <li class="mb-2"><strong>Self-Reporting Limitation:</strong> Skill ratings represent student self-perception; they do not replace formal university assessments or comprehensive technical interviews.</li>
+                    <li class="mb-2"><strong>No Salary Guarantees:</strong> Displayed salary benchmarks represent market medians and reference ranges; individual student offers depend on skills, company tier, location, and economic conditions.</li>
+                    <li class="mb-0"><strong>Metacognitive Calibration:</strong> Practical Trial Lab results represent introductory educational tasks, not professional competency examinations.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sidebar Summary -->
+        <div class="col-lg-4">
+            <div class="card card-tech p-4 mb-4 shadow-sm sticky-top" style="top: 80px;">
+                <h5 class="fw-bold mb-3 text-navy"><i class="bi bi-award text-primary me-2"></i> Project Metadata</h5>
+                <div class="mb-2 small"><strong>System:</strong> PathWise v1.0</div>
+                <div class="mb-2 small"><strong>Discipline:</strong> BCA Program</div>
+                <div class="mb-2 small"><strong>Department:</strong> School of Computer Applications</div>
+                <div class="mb-3 small"><strong>Institution:</strong> Computer Applications</div>
+                <div class="p-3 bg-light rounded-3 small mb-3">
+                    <strong>Core Design Principle:</strong>
+                    <em>"Transparent guidance over algorithmic mysticism; verifiable evidence over ungrounded claims."</em>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-sm">Try Assessment</a>
+                    <a href="{{ url_for('admin_dataset') }}" class="btn btn-outline-secondary btn-sm">Inspect Dataset Schema</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

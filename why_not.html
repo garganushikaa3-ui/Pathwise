@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Why Not {{ career['display_name'] }}? — Explainability Analysis{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-2">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('recommendations_view') }}">Recommendations</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Why Not {{ career['display_name'] }}?</li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-secondary text-white px-3 py-1 rounded-pill fw-semibold mb-1">
+                    <i class="bi bi-question-circle me-1"></i> Explainability Analysis
+                </span>
+                <h2 class="fw-bold mb-1">Diagnostic Breakdown: Why was {{ career['display_name'] }} ranked lower?</h2>
+                <p class="text-muted small mb-0">Transparency report explaining how your profile matched against this role in the scoring model.</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <span class="badge bg-light text-dark border p-2 fs-6">
+                    Current Compatibility: <strong>{{ analysis['match_score'] if analysis else '—' }}%</strong>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Non-Discouraging Principle Callout -->
+    <div class="callout-disclaimer mb-4">
+        <h6 class="fw-bold mb-1"><i class="bi bi-heart-pulse text-danger me-1"></i> Important Perspective for Students</h6>
+        <p class="small mb-0">
+            A lower match score does <strong>not</strong> mean you cannot pursue this career! It simply means that your current questionnaire responses emphasized other skills, tools, or preferences. Any technical role can become an excellent fit by acquiring the target skills and following the learning roadmap.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Diagnostic Reason 1: Missing Skills -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="p-2 rounded bg-danger bg-opacity-10 text-danger me-3"><i class="bi bi-x-octagon fs-4"></i></span>
+                    <div>
+                        <h5 class="fw-bold mb-0">Skill Gaps Lowering the Score</h5>
+                        <small class="text-muted">Skills weighted heavily for this role that were not reported:</small>
+                    </div>
+                </div>
+
+                {% if analysis and analysis['missing_skills'] %}
+                <ul class="list-group list-group-flush small mb-3">
+                    {% for ms in analysis['missing_skills'][:4] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-semibold">{{ ms['name'] }}</span>
+                        <span class="badge bg-light text-danger border">{{ ms['status'] }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="small text-muted mb-3">Complete the assessment questionnaire to see specific skill gaps.</p>
+                {% endif %}
+
+                <div class="p-3 bg-light rounded-3 small">
+                    <strong>Action to improve:</strong> Spend 3–4 weeks learning the syntax and basic principles of the top missing skill above.
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostic Reason 2: Missing Tools -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="p-2 rounded bg-warning bg-opacity-10 text-warning me-3"><i class="bi bi-tools fs-4"></i></span>
+                    <div>
+                        <h5 class="fw-bold mb-0">Unreported Software &amp; Tools</h5>
+                        <small class="text-muted">Standard tools used by practicing {{ career['display_name'] }}s:</small>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% if analysis and analysis['missing_tools'] %}
+                        {% for t in analysis['missing_tools'][:6] %}
+                        <span class="badge bg-light text-dark border px-2 py-2 small">{{ t }}</span>
+                        {% endfor %}
+                    {% else %}
+                        {% for t in career['software_tools'][:6] %}
+                        <span class="badge bg-light text-dark border px-2 py-2 small">{{ t }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="p-3 bg-light rounded-3 small">
+                    <strong>Action to improve:</strong> Download and install at least one of these industry tools locally. Follow a beginner tutorial.
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostic Reason 3: Preference Mismatch -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="p-2 rounded bg-info bg-opacity-10 text-info me-3"><i class="bi bi-sliders fs-4"></i></span>
+                    <div>
+                        <h5 class="fw-bold mb-0">Work Preference Alignment</h5>
+                        <small class="text-muted">Coding intensity and technical style differences:</small>
+                    </div>
+                </div>
+
+                <div class="mb-3 small">
+                    <div class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="text-muted">Role Typical Intensity:</span>
+                        <span class="fw-bold text-dark">{{ career['coding_intensity'] }} Coding</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Your Stated Preference:</span>
+                        <span class="fw-bold text-primary">{{ latest['answers']['work_preferences']['coding_intensity'] if latest else 'Not set' }}</span>
+                    </div>
+                </div>
+
+                <p class="small text-muted mb-0">
+                    If your preference aligns differently (e.g. you selected Less Coding while this role demands High Coding), the model appropriately penalizes the match to protect your stated priorities.
+                </p>
+            </div>
+        </div>
+
+        <!-- Diagnostic Reason 4: Next Steps Roadmap -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="p-2 rounded bg-success bg-opacity-10 text-success me-3"><i class="bi bi-signpost-2 fs-4"></i></span>
+                    <div>
+                        <h5 class="fw-bold mb-0">How to Pivot Toward This Role</h5>
+                        <small class="text-muted">Recommended bridging steps if you wish to explore it further:</small>
+                    </div>
+                </div>
+
+                <ul class="small text-muted ps-3 mb-3">
+                    <li class="mb-1">Follow the 4-stage learning roadmap for {{ career['display_name'] }}.</li>
+                    <li class="mb-1">Test your affinity with hands-on practice in the Career Trial Lab.</li>
+                    <li class="mb-1">Test hypothetical score improvements in the What-If Simulator.</li>
+                </ul>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('roadmap', career_id=career['id']) }}" class="btn btn-outline-primary btn-sm flex-grow-1">Roadmap</a>
+                    <a href="{{ url_for('simulator') }}" class="btn btn-outline-warning btn-sm text-dark flex-grow-1">What-If Simulator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

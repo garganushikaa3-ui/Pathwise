@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+
+{% block title %}PathWise — Decision Support & Career Path Explorer for Technical Career Selection{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-gradient">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-extrabold text-white mb-3 lh-sm">
+                    Discover Your <span class="text-info">Technical Career Path</span> with Explainable Intelligence.
+                </h1>
+                <p class="lead text-light opacity-90 mb-4">
+                    A personalized decision-support system built for BCA and college computer science students. Explore 38 verified technical careers, test your real problem-solving in the Career Trial Lab, simulate skill improvements, and follow transparent learning roadmaps.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-lg px-4 py-3 shadow fw-semibold rounded-3 d-flex align-items-center">
+                        <i class="bi bi-stars me-2 fs-5"></i> Start Career Assessment
+                    </a>
+                    <a href="{{ url_for('careers_list') }}" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-3 d-flex align-items-center">
+                        <i class="bi bi-compass me-2 fs-5"></i> Explore 38 Careers
+                    </a>
+                    <a href="{{ url_for('trial_lab_index') }}" class="btn btn-outline-warning btn-lg px-4 py-3 fw-semibold rounded-3 d-flex align-items-center">
+                        <i class="bi bi-flask me-2 fs-5"></i> Try Career Labs
+                    </a>
+                </div>
+                <!-- Trust & Academic Badges -->
+                <div class="d-flex flex-wrap align-items-center gap-4 text-light small opacity-80 pt-2 border-top border-secondary border-opacity-25">
+                    <div><i class="bi bi-shield-check text-success me-1"></i> Transparent Weighted Scoring</div>
+                    <div><i class="bi bi-database-check text-info me-1"></i> Official O*NET & BLS Data</div>
+                    <div><i class="bi bi-laptop text-warning me-1"></i> Practical Skill Verification</div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <!-- Interactive Preview Card -->
+                <div class="card bg-dark text-white border-secondary border-opacity-50 shadow-lg rounded-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center pb-3 border-bottom border-secondary mb-3">
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1">
+                            <i class="bi bi-activity me-1"></i> Live Decision Engine
+                        </span>
+                        <small class="text-muted">Student Profile Preview</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Top Matched Role</span>
+                            <span class="text-info fw-bold">94.2% Match Score</span>
+                        </div>
+                        <h5 class="fw-bold text-white mb-1"><i class="bi bi-code-slash text-primary me-2"></i>Software Developer</h5>
+                        <p class="small text-muted mb-2">High Coding Intensity &bull; $135,980 BLS Median &bull; ₹6-16 LPA India</p>
+                        <div class="progress progress-match" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 94%;"></div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-secondary bg-opacity-25 rounded-3 mb-3 small">
+                        <div class="fw-semibold text-info mb-1"><i class="bi bi-chat-left-dots me-1"></i> Why this matched you:</div>
+                        <p class="mb-0 text-light opacity-90">
+                            Strong interest alignment in Application Building, high Python proficiency, and demonstrated algorithmic reasoning in the Trial Lab.
+                        </p>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('assessment') }}" class="btn btn-outline-info btn-sm">Take Assessment to Find Your Match &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Banner -->
+<section class="py-4 bg-white border-bottom shadow-sm">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="fs-2 fw-bold text-primary mb-1">38</div>
+                <div class="text-muted small fw-medium">Verified Technical Careers</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="fs-2 fw-bold text-teal mb-1">35+</div>
+                <div class="text-muted small fw-medium">O*NET Essential Skills</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="fs-2 fw-bold text-warning mb-1">4</div>
+                <div class="text-muted small fw-medium">Interactive Trial Labs</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="fs-2 fw-bold text-success mb-1">100%</div>
+                <div class="text-muted small fw-medium">Explainable Model</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Quick-Finder Section -->
+<section class="py-4 bg-light border-bottom">
+    <div class="container">
+        <div class="card card-tech p-4 shadow-sm border-primary border-opacity-25 bg-white">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-5">
+                    <h5 class="fw-bold mb-1 text-navy"><i class="bi bi-search text-primary me-2"></i> Instant Career Quick-Finder</h5>
+                    <p class="small text-muted mb-0">Jump directly into any of the 38 verified technical roles by keyword, tool, or domain.</p>
+                </div>
+                <div class="col-lg-7">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-compass text-primary"></i></span>
+                        <input type="text" class="form-control border-start-0" id="quickFinderInput" placeholder="Type a career, tool or skill (e.g. Python, Cloud, Security, Web, SQL)...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Filter Chips -->
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-3 pt-3 border-top">
+                <small class="text-muted fw-semibold me-1">Popular Filters:</small>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill chip-filter" data-term="Software">Software &amp; Web</button>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill chip-filter" data-term="Data">Data &amp; AI</button>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill chip-filter" data-term="Security">Cybersecurity</button>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill chip-filter" data-term="Cloud">Cloud &amp; Systems</button>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill chip-filter" data-term="Python">Python Roles</button>
+                <a href="{{ url_for('careers_list') }}" class="btn btn-sm btn-link text-decoration-none ms-auto">Browse All 38 Roles &rarr;</a>
+            </div>
+
+            <!-- Live Match Container (populated dynamically) -->
+            <div class="row g-2 mt-3 d-none" id="quickFinderResults"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Student Journey Flow -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold mb-2">Student Workflow</span>
+            <h2 class="fw-bold">How PathWise Guides Your Journey</h2>
+            <p class="text-muted">A structured, 4-stage pipeline that eliminates confusion and turns self-reported interests into verifiable career roadmaps.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 card-tech p-4 text-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-ui-checks-grid fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">1. Profile Assessment</h5>
+                    <p class="text-muted small mb-0">Record your current courses, rated skills (0-5), known tools, and preferred coding intensity.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 card-tech p-4 text-center">
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-cpu fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">2. Transparent Matching</h5>
+                    <p class="text-muted small mb-0">Our Python engine computes weighted compatibility across Interests, Skills, Tools, Education, and Work Preferences.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 card-tech p-4 text-center">
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-flask fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">3. Career Trial Lab</h5>
+                    <p class="text-muted small mb-0">Try real tasks in Data Analysis, Software Logic, Cybersecurity, and UX to compare self-ratings with actual performance.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 card-tech p-4 text-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                        <i class="bi bi-signpost-2 fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">4. Learning Roadmap</h5>
+                    <p class="text-muted small mb-0">Follow a step-by-step 4-stage progression with verified salary benchmarks and skill-gap priorities.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Feature Cards -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="badge bg-teal text-white px-3 py-2 rounded-pill fw-semibold mb-2">Explore Modules</span>
+                <h2 class="fw-bold mb-1">Decision Support Modules Built For BCA Students</h2>
+                <p class="text-muted mb-0">Every tool is interactive, explainable, and directly grounded in the occupational dataset.</p>
+            </div>
+            <a href="{{ url_for('assessment') }}" class="btn btn-outline-primary d-none d-md-inline-block">Begin Assessment</a>
+        </div>
+        <div class="row g-4">
+            <!-- Feature 1: Explainable Recommendation Engine -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-primary bg-opacity-10 text-primary me-3"><i class="bi bi-stars fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">Explainable Recommendations</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Get top ranked career matches with comprehensive explanations: why it matched, which interests contributed, and which skills are still missing.
+                    </p>
+                    <a href="{{ url_for('recommendations_view') }}" class="text-primary fw-semibold small text-decoration-none mt-auto">View Recommendations &rarr;</a>
+                </div>
+            </div>
+            <!-- Feature 2: Career Trial Lab -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-warning bg-opacity-10 text-warning me-3"><i class="bi bi-flask fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">Career Trial Lab</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Solve interactive tasks in Data Analytics, Software Debugging, Phishing Defense, and Mobile UX Design before committing your time.
+                    </p>
+                    <a href="{{ url_for('trial_lab_index') }}" class="text-warning fw-semibold small text-decoration-none mt-auto">Enter Trial Lab &rarr;</a>
+                </div>
+            </div>
+            <!-- Feature 3: Self-Rating vs Evidence Check -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-success bg-opacity-10 text-success me-3"><i class="bi bi-check2-circle fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">Self-Rating vs Evidence Check</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Compare your self-reported skills against demonstrated task performance with respectful, constructive feedback and practice recommendations.
+                    </p>
+                    <a href="{{ url_for('evidence_check') }}" class="text-success fw-semibold small text-decoration-none mt-auto">Compare Skill Evidence &rarr;</a>
+                </div>
+            </div>
+            <!-- Feature 4: What-If Career Simulator -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-info bg-opacity-10 text-info me-3"><i class="bi bi-sliders fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">What-If Career Simulator</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Test hypothetical scenarios: "What if I learn SQL?", "What if I improve Python to 4/5?" and see live ranking diffs without changing saved data.
+                    </p>
+                    <a href="{{ url_for('simulator') }}" class="text-info fw-semibold small text-decoration-none mt-auto">Run What-If Simulation &rarr;</a>
+                </div>
+            </div>
+            <!-- Feature 5: Career Switch Bridge -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-danger bg-opacity-10 text-danger me-3"><i class="bi bi-shuffle fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">Career Switch Bridge</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Analyze transition feasibility between two careers (e.g. Web Developer &rarr; Data Scientist) with skill overlap analysis and a 4-phase transition plan.
+                    </p>
+                    <a href="{{ url_for('switch_bridge') }}" class="text-danger fw-semibold small text-decoration-none mt-auto">Explore Switch Bridge &rarr;</a>
+                </div>
+            </div>
+            <!-- Feature 6: Career Quest -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-tech h-100 p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="p-2 rounded bg-primary bg-opacity-10 text-primary me-3"><i class="bi bi-award fs-4"></i></span>
+                        <h5 class="fw-bold mb-0">Career Quest Badges</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Earn exploration badges by completing quizzes, conducting simulations, and finishing practical lab tasks during your BCA journey.
+                    </p>
+                    <a href="{{ url_for('quest') }}" class="text-primary fw-semibold small text-decoration-none mt-auto">View Quest Missions &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Callout Disclaimer -->
+<div class="container my-4">
+    <div class="callout-disclaimer d-flex align-items-start">
+        <i class="bi bi-info-circle-fill fs-4 me-3 mt-1"></i>
+        <div>
+            <h6 class="fw-bold mb-1">Academic Decision-Support Disclaimer</h6>
+            <p class="mb-0 small">
+                PathWise is developed as an educational decision-support explorer for BCA students. Recommendation scores represent mathematical compatibility based on user input and occupational data; they do not guarantee employment, predict exact salary outcomes, or constitute professional career counseling.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const careers = {{ all_careers_summary|tojson }};
+    const input = document.getElementById('quickFinderInput');
+    const resultsContainer = document.getElementById('quickFinderResults');
+    const chipBtns = document.querySelectorAll('.chip-filter');
+
+    function performQuickSearch(query) {
+        if (!query || query.trim().length === 0) {
+            resultsContainer.classList.add('d-none');
+            resultsContainer.innerHTML = '';
+            return;
+        }
+
+        const q = query.toLowerCase().trim();
+        const matches = careers.filter(c => {
+            const title = (c.display_name || '').toLowerCase();
+            const cat = (c.category || '').toLowerCase();
+            const skills = (c.technical_skills || []).join(' ').toLowerCase();
+            const tools = (c.software_tools || []).join(' ').toLowerCase();
+            return title.includes(q) || cat.includes(q) || skills.includes(q) || tools.includes(q);
+        }).slice(0, 6); // Top 6 quick hits
+
+        if (matches.length > 0) {
+            resultsContainer.classList.remove('d-none');
+            resultsContainer.innerHTML = '';
+            matches.forEach(m => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-sm-6';
+                col.innerHTML = `
+                    <div class="p-3 border rounded-3 bg-light h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <span class="badge-category" style="font-size: 0.7rem;">${m.category}</span>
+                            <span class="badge bg-white text-dark border small">${m.coding_intensity} Coding</span>
+                        </div>
+                        <h6 class="fw-bold mb-1"><a href="/career/${m.id}" class="text-decoration-none text-dark">${m.display_name}</a></h6>
+                        <small class="text-primary fw-semibold mb-2 d-block">${m.median_salary_inr_benchmark || 'Competitive Benchmark'}</small>
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="/career/${m.id}" class="btn btn-sm btn-outline-primary flex-grow-1">Profile &rarr;</a>
+                            <a href="/roadmap/${m.id}" class="btn btn-sm btn-outline-secondary">Roadmap</a>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.appendChild(col);
+            });
+        } else {
+            resultsContainer.classList.remove('d-none');
+            resultsContainer.innerHTML = `
+                <div class="col-12 text-center py-2 text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> No exact quick matches for "${query}". Try searching "Python", "Web", "Data", "Security", or <a href="/careers">browse full directory</a>.
+                </div>
+            `;
+        }
+    }
+
+    if (input) {
+        input.addEventListener('input', function() {
+            performQuickSearch(this.value);
+        });
+    }
+
+    chipBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const term = this.getAttribute('data-term');
+            if (input) {
+                input.value = term;
+                performQuickSearch(term);
+                input.focus();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

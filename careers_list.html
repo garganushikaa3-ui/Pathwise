@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}All 38 Technical Careers — PathWise Explorer{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-6">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill fw-semibold mb-1">
+                    Occupational Directory
+                </span>
+                <h2 class="fw-bold mb-1">Explore 38 Technical Careers</h2>
+                <p class="text-muted small mb-0">Verified O*NET &amp; U.S. Bureau of Labor Statistics dataset filtered for BCA computer science disciplines.</p>
+            </div>
+            <div class="col-lg-6">
+                <!-- Search Form -->
+                <form method="GET" action="{{ url_for('careers_list') }}" class="d-flex gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control" name="q" placeholder="Search by title, skill (Python, SQL), or tool..." value="{{ search_query }}">
+                        {% if selected_category %}
+                        <input type="hidden" name="category" value="{{ selected_category }}">
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary px-3">Search</button>
+                    {% if search_query or selected_category %}
+                    <a href="{{ url_for('careers_list') }}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top">
+            <a href="{{ url_for('careers_list') }}" class="btn btn-sm {% if not selected_category %}btn-dark{% else %}btn-outline-secondary bg-white{% endif %} rounded-pill">
+                All Categories ({{ all_careers_summary|length }})
+            </a>
+            {% for cat in categories %}
+            <a href="{{ url_for('careers_list', category=cat) }}" class="btn btn-sm {% if selected_category == cat %}btn-primary{% else %}btn-outline-secondary bg-white{% endif %} rounded-pill">
+                {{ cat }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="small text-muted">
+            Showing <strong>{{ careers|length }}</strong> technical career records {% if selected_category %}in <em>{{ selected_category }}</em>{% endif %} {% if search_query %}matching "<em>{{ search_query }}</em>"{% endif %}
+        </div>
+        <a href="{{ url_for('admin_export_csv') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i> Export Dataset CSV</a>
+    </div>
+
+    <div class="row g-4">
+        {% for c in careers %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-tech h-100 p-4 d-flex flex-column shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge-category">{{ c['category'] }}</span>
+                    <button class="btn btn-sm btn-light border btn-save-career rounded-circle" data-career-id="{{ c['id'] }}" title="Bookmark Career">
+                        <i class="bi {% if c['id'] in saved_career_ids %}bi-bookmark-check-fill text-warning{% else %}bi-bookmark{% endif %}"></i>
+                    </button>
+                </div>
+
+                <h5 class="fw-bold mb-1 text-dark">
+                    <a href="{{ url_for('career_detail', career_id=c['id']) }}" class="text-decoration-none text-dark">
+                        {{ c['display_name'] }}
+                    </a>
+                </h5>
+                <small class="text-secondary font-monospace mb-2 d-block">O*NET-SOC {{ c['soc_code'] }}</small>
+
+                <p class="small text-muted mb-3 flex-grow-1">
+                    {{ c['description'][:130] }}...
+                </p>
+
+                <!-- Salary & Coding Level -->
+                <div class="bg-light p-2 rounded mb-3" style="font-size: 0.78rem;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted"><i class="bi bi-currency-rupee text-primary"></i> India Benchmark:</span>
+                        <span class="fw-bold text-primary">{{ c['median_salary_inr_benchmark'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted"><i class="bi bi-cash-stack text-success"></i> U.S. BLS Median:</span>
+                        <span class="fw-semibold">${{ "{:,}".format(c['median_salary_usd']) }} (2025)</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted"><i class="bi bi-laptop text-info"></i> Coding Intensity:</span>
+                        <span class="badge bg-white text-dark border">{{ c['coding_intensity'] }}</span>
+                    </div>
+                </div>
+
+                <!-- Skills Tags -->
+                <div class="mb-3">
+                    <div class="small text-muted mb-1" style="font-size: 0.75rem;">Core Skills:</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for s in c['technical_skills'][:3] %}
+                        <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">{{ s }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Action Links -->
+                <div class="d-grid gap-2 mt-auto">
+                    <a href="{{ url_for('career_detail', career_id=c['id']) }}" class="btn btn-outline-primary btn-sm fw-semibold">
+                        View Detailed Profile &rarr;
+                    </a>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('roadmap', career_id=c['id']) }}" class="btn btn-outline-secondary">Roadmap</a>
+                        <a href="{{ url_for('skill_gap', career_id=c['id']) }}" class="btn btn-outline-secondary">Skill Gap</a>
+                        <a href="{{ url_for('reality_check', career_id=c['id']) }}" class="btn btn-outline-secondary">Reality Check</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <h5>No careers match your search criteria</h5>
+            <p class="text-muted small">Try searching for other keywords like "Python", "Web", "Cybersecurity", or clear filters.</p>
+            <a href="{{ url_for('careers_list') }}" class="btn btn-primary btn-sm">Reset Filters</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

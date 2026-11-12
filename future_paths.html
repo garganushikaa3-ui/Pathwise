@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Future Path Preview — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <h2 class="fw-bold mb-1">Future Path Preview: Trajectory Comparison</h2>
+        <p class="text-muted small mb-3">Compare two hypothetical student learning journeys to understand skills, semester tasks, and target career options.</p>
+
+        <!-- Path Selectors -->
+        <form method="GET" action="{{ url_for('future_paths') }}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold">Trajectory A</label>
+                <select name="p1" class="form-select">
+                    {% for pid, p in all_paths.items() %}
+                    <option value="{{ pid }}" {% if path_a['id'] == pid %}selected{% endif %}>{{ p['title'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold">Trajectory B</label>
+                <select name="p2" class="form-select">
+                    {% for pid, p in all_paths.items() %}
+                    <option value="{{ pid }}" {% if path_b['id'] == pid %}selected{% endif %}>{{ p['title'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-arrow-left-right me-1"></i> Compare Paths</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4 mb-4">
+        <!-- Path A Column -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm border-top border-4 border-{{ path_a['badge_color'] }}">
+                <span class="badge bg-{{ path_a['badge_color'] }} text-white align-self-start mb-2 px-3 py-1">Trajectory Option A</span>
+                <h4 class="fw-bold mb-3 text-dark">{{ path_a['title'] }}</h4>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Core Skills Developed:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% for s in path_a['core_skills'] %}
+                    <span class="badge bg-light text-dark border">{{ s }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Primary Development Tools:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    {% for t in path_a['primary_tools'] %}
+                    <span class="badge bg-light text-secondary border">{{ t }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">6-Month Curriculum Milestones:</h6>
+                <div class="mb-4">
+                    {% for ms in path_a['curriculum_milestones'] %}
+                    <div class="p-2 border rounded bg-light mb-2 small">
+                        <strong>{{ ms['term'] }}:</strong> <span class="text-muted">{{ ms['goal'] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Target Career Roles:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    {% for role in path_a['target_career_names'] %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">{{ role }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Practical College Tasks:</h6>
+                <ul class="small text-muted ps-3 mb-4">
+                    {% for pt in path_a['practical_tasks'] %}
+                    <li class="mb-1">{{ pt }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="small fw-bold text-warning text-uppercase mb-2"><i class="bi bi-exclamation-triangle me-1"></i> Key Challenges:</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    {% for lc in path_a['learning_challenges'] %}
+                    <li class="mb-1">{{ lc }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Path B Column -->
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 shadow-sm border-top border-4 border-{{ path_b['badge_color'] }}">
+                <span class="badge bg-{{ path_b['badge_color'] }} text-white align-self-start mb-2 px-3 py-1">Trajectory Option B</span>
+                <h4 class="fw-bold mb-3 text-dark">{{ path_b['title'] }}</h4>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Core Skills Developed:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% for s in path_b['core_skills'] %}
+                    <span class="badge bg-light text-dark border">{{ s }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Primary Development Tools:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    {% for t in path_b['primary_tools'] %}
+                    <span class="badge bg-light text-secondary border">{{ t }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">6-Month Curriculum Milestones:</h6>
+                <div class="mb-4">
+                    {% for ms in path_b['curriculum_milestones'] %}
+                    <div class="p-2 border rounded bg-light mb-2 small">
+                        <strong>{{ ms['term'] }}:</strong> <span class="text-muted">{{ ms['goal'] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Target Career Roles:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-4">
+                    {% for role in path_b['target_career_names'] %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">{{ role }}</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark text-uppercase mb-2">Practical College Tasks:</h6>
+                <ul class="small text-muted ps-3 mb-4">
+                    {% for pt in path_b['practical_tasks'] %}
+                    <li class="mb-1">{{ pt }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="small fw-bold text-warning text-uppercase mb-2"><i class="bi bi-exclamation-triangle me-1"></i> Key Challenges:</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    {% for lc in path_b['learning_challenges'] %}
+                    <li class="mb-1">{{ lc }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic Transparency Notice -->
+    <div class="callout-disclaimer">
+        <h6 class="fw-bold mb-1"><i class="bi bi-shield-check me-1"></i> Academic Scenario Disclaimer</h6>
+        <p class="small mb-0">
+            Future Path Previews represent proposed learning models and study trajectories. They do not predict exact timelines, salary increases, or employment guarantees. Dedication and continuous hands-on project creation are the true drivers of technical mastery.
+        </p>
+    </div>
+</div>
+{% endblock %}

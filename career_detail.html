@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ career['display_name'] }} — PathWise Career Profile{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-2">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('careers_list') }}">Careers</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ career['display_name'] }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge-category">{{ career['category'] }}</span>
+                    <span class="badge bg-secondary font-monospace">O*NET-SOC {{ career['soc_code'] }}</span>
+                    <span class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i> {{ career['coding_intensity'] }} Coding</span>
+                </div>
+                <h1 class="display-6 fw-bold mb-2">{{ career['display_name'] }}</h1>
+                <p class="text-muted mb-0 max-w-800">{{ career['description'] }}</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary btn-save-career" data-career-id="{{ career['id'] }}">
+                    <i class="bi {% if is_saved %}bi-bookmark-check-fill text-warning{% else %}bi-bookmark{% endif %} me-1"></i>
+                    <span class="btn-text">{% if is_saved %}Saved{% else %}Save Career{% endif %}</span>
+                </button>
+                <a href="{{ url_for('roadmap', career_id=career['id']) }}" class="btn btn-primary"><i class="bi bi-signpost-2 me-1"></i> View Roadmap</a>
+                <a href="{{ url_for('compare', c1=career['id']) }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left-right me-1"></i> Compare</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Personalized Assessment Match Banner (if student completed assessment) -->
+    {% if personalized_match %}
+    <div class="card card-tech mb-4 border-primary border-opacity-50 p-4 bg-white shadow-sm">
+        <div class="row align-items-center g-3">
+            <div class="col-md-3 text-center border-end">
+                <div class="small text-muted mb-1">Your Personal Match</div>
+                <div class="display-5 fw-extrabold text-primary">{{ personalized_match['match_score'] }}%</div>
+                <span class="badge bg-{{ personalized_match['readiness_badge'] }}">{{ personalized_match['readiness_level'] }}</span>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold mb-1"><i class="bi bi-stars text-warning me-1"></i> Personalized Fit Analysis</h6>
+                <p class="small text-muted mb-2">
+                    {{ personalized_match['reasons'][0] if personalized_match['reasons'] else 'General alignment with your computing background.' }}
+                </p>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for ms in personalized_match['matched_skills'] %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.72rem;">
+                        <i class="bi bi-check2"></i> {{ ms['name'] }}
+                    </span>
+                    {% endfor %}
+                    {% for gs in personalized_match['missing_skills'][:2] %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" style="font-size: 0.72rem;">
+                        <i class="bi bi-arrow-up-circle"></i> Needs: {{ gs['name'] }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <a href="{{ url_for('skill_gap', career_id=career['id']) }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                    <i class="bi bi-bar-chart-steps me-1"></i> Detailed Skill Gap
+                </a>
+                <a href="{{ url_for('why_not', career_id=career['id']) }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-question-circle me-1"></i> Why Not Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Left Column: Details, Skills, Tools -->
+        <div class="col-lg-8">
+            <!-- Verified Salary & Economic Outlook -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow text-success me-2"></i> Verified Compensation &amp; Growth Outlook</h5>
+                    <span class="badge bg-light text-muted border">Official Sources</span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- India Benchmark -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-primary h-100">
+                            <div class="small text-muted mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i> India Tech Market Benchmark</div>
+                            <h4 class="fw-bold text-primary mb-1">{{ career['median_salary_inr_benchmark'] }}</h4>
+                            <small class="text-muted d-block">Typical entry to mid-level technical compensation range for BCA &amp; computer science graduates in Indian technology hubs.</small>
+                            <small class="text-secondary mt-1 d-block font-monospace">Source: India Tech Industry Salary Index</small>
+                        </div>
+                    </div>
+
+                    <!-- U.S. BLS Benchmark -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-success h-100">
+                            <div class="small text-muted mb-1"><i class="bi bi-cash-stack text-success me-1"></i> U.S. BLS Median Annual Wage</div>
+                            <h4 class="fw-bold text-success mb-1">${{ "{:,}".format(career['median_salary_usd']) }} <span class="fs-6 fw-normal text-muted">/ year</span></h4>
+                            <small class="text-muted d-block">Median annual wage across all experience levels in the United States labour market.</small>
+                            <small class="text-secondary mt-1 d-block font-monospace">Source: U.S. Bureau of Labor Statistics (BLS 2025)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 border rounded-3 bg-white">
+                    <div class="row align-items-center g-2 small">
+                        <div class="col-md-4">
+                            <strong>10-Year Growth Projection:</strong>
+                            <span class="badge bg-success ms-1">+{{ career['job_outlook_pct'] }}%</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Reference Period:</strong> 2025–2035 BLS Matrix
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{{ career['source_url'] }}" target="_blank" rel="noopener" class="text-primary text-decoration-none fw-semibold">
+                                View on O*NET Online <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Essential O*NET Skills & Curated Technical Skills -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Essential O*NET Skills (Importance Level)</h5>
+                    <span class="badge bg-light text-muted border">Radar &amp; Progress Metrics</span>
+                </div>
+                <p class="small text-muted mb-3">Extracted from official occupational analyst ratings in <em>Essential Skills.xlsx</em>.</p>
+
+                <!-- Chart.js Radar Chart Container -->
+                <div class="row g-4 align-items-center mb-4">
+                    <div class="col-md-6">
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="onetSkillRadarChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row g-2">
+                            {% for sk in career['onet_essential_skills'] %}
+                            <div class="col-12">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                        <span>{{ sk['skill'] }}</span>
+                                        <span class="text-primary">{{ sk['importance'] }} / 5.0</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ (sk['importance'] / 5.0) * 100 }}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-2">Core Industry Technical Skills Expected in Practice</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for ts in career['technical_skills'] %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 fs-6">
+                        <i class="bi bi-check-circle me-1"></i> {{ ts }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Common Software & Tools -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h5 class="fw-bold mb-2"><i class="bi bi-tools text-teal me-2"></i> Software, Languages &amp; Tools</h5>
+                <p class="small text-muted mb-3">Standard tools used by practicing {{ career['display_name'] }}s as recorded in the occupational matrix.</p>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% for tool in career['software_tools'] %}
+                    <span class="badge bg-light text-dark border px-3 py-2" style="font-size: 0.85rem;">
+                        <i class="bi bi-wrench-adjustable me-1 text-teal"></i> {{ tool }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Career Reality Check Section -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-eye-fill text-info me-2"></i> Career Reality Check</h5>
+                    <a href="{{ url_for('reality_check', career_id=career['id']) }}" class="btn btn-outline-info btn-sm">Full Reality Breakdown</a>
+                </div>
+
+                <h6 class="fw-bold small text-muted text-uppercase mb-2">Typical Day-to-Day Activities</h6>
+                <ul class="small text-muted ps-3 mb-4">
+                    {% for act in career['typical_work_activities'] %}
+                    <li class="mb-1">{{ act }}</li>
+                    {% endfor %}
+                </ul>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold small text-success mb-2"><i class="bi bi-play-circle me-1"></i> Starter Tasks for BCA Students</h6>
+                            <ul class="small text-muted ps-3 mb-0">
+                                {% for bt in career['beginner_tasks'] %}
+                                <li class="mb-1">{{ bt }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold small text-warning mb-2"><i class="bi bi-exclamation-triangle me-1"></i> Realistic Challenges</h6>
+                            <ul class="small text-muted ps-3 mb-0">
+                                {% for ch in career['potential_challenges'] %}
+                                <li class="mb-1">{{ ch }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Roadmap Preview & Fast Actions -->
+        <div class="col-lg-4">
+            <!-- Learning Roadmap Preview -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-signpost-2 text-primary me-2"></i> Learning Roadmap</h5>
+                    <a href="{{ url_for('roadmap', career_id=career['id']) }}" class="btn btn-sm btn-outline-primary">Full View</a>
+                </div>
+
+                <div class="ps-2">
+                    {% for step in career['career_roadmap'] %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot">{{ loop.index }}</div>
+                        <h6 class="fw-bold mb-1 small">{{ step['stage'] }}: {{ step['title'] }}</h6>
+                        <p class="text-muted small mb-0">{{ step['description'] }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Entry Education & Experience -->
+            <div class="card card-tech p-4 mb-4 shadow-sm">
+                <h5 class="fw-bold mb-3"><i class="bi bi-award-fill text-warning me-2"></i> Entry Qualifications</h5>
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">Typical Education Needed:</small>
+                    <div class="fw-semibold text-dark">{{ career['education_requirements'] }}</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">Related Work Experience:</small>
+                    <div class="fw-semibold text-dark">{{ career['related_work_experience'] }}</div>
+                </div>
+                <div class="alert alert-info small mb-0 py-2">
+                    <i class="bi bi-info-circle me-1"></i> BCA students qualify for entry-level roles by building solid portfolio projects and completing technical internships.
+                </div>
+            </div>
+
+            <!-- Related Careers in Category -->
+            <div class="card card-tech p-4 shadow-sm">
+                <h5 class="fw-bold mb-3"><i class="bi bi-collection text-teal me-2"></i> Related Roles</h5>
+                {% if related %}
+                <ul class="list-unstyled mb-0">
+                    {% for r in related %}
+                    <li class="mb-2 pb-2 border-bottom">
+                        <a href="{{ url_for('career_detail', career_id=r['id']) }}" class="fw-semibold text-decoration-none text-dark d-block">
+                            {{ r['display_name'] }}
+                        </a>
+                        <small class="text-muted">{{ r['category'] }} &bull; {{ r['coding_intensity'] }} Coding</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="small text-muted mb-0">Explore more careers in the <a href="{{ url_for('careers_list') }}">full directory</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('onetSkillRadarChart');
+    if (ctx) {
+        const labels = [{% for sk in career['onet_essential_skills'] %}"{{ sk['skill'] }}",{% endfor %}];
+        const dataVals = [{% for sk in career['onet_essential_skills'] %}{{ sk['importance'] }},{% endfor %}];
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'O*NET Importance Level (0–5)',
+                    data: dataVals,
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    borderColor: '#2563eb',
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#2563eb',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        suggestedMin: 0,
+                        suggestedMax: 5,
+                        pointLabels: {
+                            font: { size: 10, weight: '600' },
+                            color: '#475569'
+                        },
+                        ticks: { stepSize: 1, display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

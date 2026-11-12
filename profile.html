@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Profile — PathWise{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Sidebar Profile Card -->
+        <div class="col-lg-4">
+            <div class="card card-tech p-4 text-center mb-4">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-person-circle fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-1">{{ user['full_name'] if user else 'Guest Student' }}</h4>
+                <p class="text-muted small mb-3">{{ user['email'] if user else 'Session active (Guest mode)' }}</p>
+                
+                <div class="text-start bg-light p-3 rounded-3 mb-3 small">
+                    <div class="mb-2"><strong>Degree:</strong> {{ user['qualification'] if user else 'BCA' }}</div>
+                    <div class="mb-2"><strong>Semester:</strong> {{ user['current_semester'] if user else 'Semester 3' }}</div>
+                    <div><strong>Institution:</strong> {{ user['college'] if user else 'Manav Rachna International Institute of Research and Studies' }}</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('assessment') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-ui-checks me-1"></i> Retake Assessment</a>
+                    <a href="{{ url_for('trial_lab_index') }}" class="btn btn-outline-warning btn-sm"><i class="bi bi-flask me-1"></i> Career Trial Lab</a>
+                </div>
+            </div>
+
+            <!-- Badges summary -->
+            <div class="card card-tech p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-award text-warning me-2"></i> Quest Badges</h6>
+                    <span class="badge bg-warning text-dark">{{ badges|length }} Earned</span>
+                </div>
+                {% if badges %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for b in badges %}
+                    <span class="badge bg-light text-dark border p-2 d-inline-flex align-items-center">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i> {{ b['badge_title'] }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="small text-muted mb-0">No badges earned yet. Complete assessments and trial lab tasks to unlock badges!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Profile Info -->
+        <div class="col-lg-8">
+            <!-- Saved Careers Section -->
+            <div class="card card-tech p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-bookmark-star text-primary me-2"></i> Saved Careers ({{ saved_careers|length }})</h5>
+                    <a href="{{ url_for('careers_list') }}" class="btn btn-outline-secondary btn-sm">Explore More Careers</a>
+                </div>
+
+                {% if saved_careers %}
+                <div class="row g-3">
+                    {% for sc in saved_careers %}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column">
+                            <span class="badge-category mb-2 align-self-start">{{ sc['category'] }}</span>
+                            <h6 class="fw-bold mb-1">{{ sc['display_name'] }}</h6>
+                            <p class="small text-muted mb-3 flex-grow-1">{{ sc['description'][:90] }}...</p>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="{{ url_for('career_detail', career_id=sc['id']) }}" class="btn btn-sm btn-outline-primary flex-grow-1">Details</a>
+                                <a href="{{ url_for('roadmap', career_id=sc['id']) }}" class="btn btn-sm btn-outline-teal">Roadmap</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 bg-light rounded-3 text-muted">
+                    <i class="bi bi-bookmark fs-2 text-secondary mb-2 d-block"></i>
+                    <p class="mb-1">You haven't saved any careers yet.</p>
+                    <small>Click the bookmark icon on any career profile to save it to your dashboard.</small>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Practical Trial Lab Results -->
+            <div class="card card-tech p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-flask text-warning me-2"></i> Trial Lab Task Records</h5>
+                    <a href="{{ url_for('evidence_check') }}" class="btn btn-outline-success btn-sm"><i class="bi bi-check2-circle me-1"></i> Evidence Check</a>
+                </div>
+
+                {% if trials %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Practical Track</th>
+                                <th>Score</th>
+                                <th>Demonstrated Level</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in trials %}
+                            <tr>
+                                <td class="fw-semibold">{{ t['career_track'].replace('_', ' ').title() }}</td>
+                                <td><span class="badge bg-primary">{{ t['score'] }} / {{ t['max_score'] }}</span></td>
+                                <td class="text-muted">{{ t['feedback'][:60] }}...</td>
+                                <td class="text-muted">{{ t['completed_at'][:10] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="small text-muted mb-0">No lab tasks attempted yet. Head over to the <a href="{{ url_for('trial_lab_index') }}">Career Trial Lab</a> to test your problem-solving skills.</p>
+                {% endif %}
+            </div>
+
+            <!-- Assessment History -->
+            <div class="card card-tech p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-info me-2"></i> Assessment Submissions</h5>
+                {% if assessments %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date Completed</th>
+                                <th>Top Career Match</th>
+                                <th>Match Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assessments %}
+                            <tr>
+                                <td>{{ a['completed_at'][:16] }}</td>
+                                <td class="fw-semibold text-primary">{{ a['top_career'] }}</td>
+                                <td><span class="badge bg-success">{{ a['match_score'] }}%</span></td>
+                                <td>
+                                    <a href="{{ url_for('recommendations_view') }}" class="btn btn-sm btn-outline-secondary">View Results</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="small text-muted mb-0">No saved assessments in your record yet. <a href="{{ url_for('assessment') }}">Start your first assessment</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

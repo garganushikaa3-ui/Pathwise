@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Switch Bridge — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 hero-gradient">
+    <div class="container">
+        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-semibold mb-2">
+            <i class="bi bi-signpost-split me-1"></i> Technical Role Pivot Analyzer
+        </span>
+        <h1 class="display-6 fw-bold mb-1">Career Switch Bridge</h1>
+        <p class="text-light opacity-90 small mb-0">
+            Thinking about pivoting from one technical specialty to another? Analyze transferable competencies, identify skill gaps, and explore an actionable transition roadmap.
+        </p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Role Switch Selection Form -->
+    <div class="card card-tech mb-4 p-4 shadow-sm">
+        <form method="GET" action="{{ url_for('switch_bridge') }}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Current Role / Academic Focus (Career A)</label>
+                <select name="from" class="form-select">
+                    {% for c in all_careers %}
+                    <option value="{{ c['id'] }}" {% if from_id == c['id'] %}selected{% endif %}>{{ c['display_name'] }} ({{ c['category'] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 text-center text-primary d-none d-md-block fs-3 pb-1">
+                <i class="bi bi-arrow-right-circle-fill"></i>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Target Career Pivot (Career B)</label>
+                <select name="to" class="form-select">
+                    {% for c in all_careers %}
+                    <option value="{{ c['id'] }}" {% if to_id == c['id'] %}selected{% endif %}>{{ c['display_name'] }} ({{ c['category'] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary px-4 fw-semibold"><i class="bi bi-calculator me-1"></i> Analyze Transition Bridge</button>
+            </div>
+        </form>
+    </div>
+
+    {% if bridge %}
+    <!-- Bridge Summary Overview -->
+    <div class="card card-tech p-4 mb-4 shadow-sm border-start border-4 border-{{ bridge['difficulty_badge'] }}">
+        <div class="row align-items-center g-4">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-light text-dark border">{{ bridge['from_career']['display_name'] }}</span>
+                    <i class="bi bi-arrow-right text-muted"></i>
+                    <span class="badge bg-primary text-white">{{ bridge['to_career']['display_name'] }}</span>
+                </div>
+                <h4 class="fw-bold mb-2">Transition Feasibility: <span class="text-{{ bridge['difficulty_badge'] }}">{{ bridge['difficulty'] }}</span></h4>
+                <p class="text-muted small mb-0">
+                    Estimated Timeline: <strong>{{ bridge['estimated_timeline'] }}</strong> with focused coursework and hands-on capstone development.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="small text-muted mb-1">Competency Overlap</div>
+                <div class="display-6 fw-extrabold text-primary">{{ bridge['overlap_percentage'] }}%</div>
+                <div class="progress progress-match mt-1" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: {{ bridge['overlap_percentage'] }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transferable Strengths vs Gaps -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card card-tech h-100 p-4 shadow-sm border-top border-4 border-success">
+                <h5 class="fw-bold text-success mb-3"><i class="bi bi-check-circle-fill me-2"></i> Transferable Strengths</h5>
+                <p class="small text-muted mb-3">Skills and tools you already carry from {{ bridge['from_career']['display_name'] }} into the target role:</p>
+
+                <h6 class="small fw-bold text-dark mb-2">Overlapping Skills:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% for s in bridge['common_skills'] %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ s }}</span>
+                    {% else %}
+                    <span class="text-muted small">Fundamental problem solving and computer science logic.</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark mb-2">Transferable Software &amp; Tools:</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for t in bridge['common_tools'] %}
+                    <span class="badge bg-light text-dark border">{{ t }}</span>
+                    {% else %}
+                    <span class="text-muted small">Standard operating systems and office productivity tools.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card card-tech h-100 p-4 shadow-sm border-top border-4 border-warning">
+                <h5 class="fw-bold text-warning mb-3"><i class="bi bi-arrow-up-circle-fill me-2"></i> Skill Gaps to Bridge</h5>
+                <p class="small text-muted mb-3">New competencies required by {{ bridge['to_career']['display_name'] }} that you will need to acquire:</p>
+
+                <h6 class="small fw-bold text-dark mb-2">Target Technical Skills to Learn:</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% for s in bridge['gap_skills'] %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">{{ s }}</span>
+                    {% else %}
+                    <span class="text-muted small">Core skills already overlap substantially!</span>
+                    {% endfor %}
+                </div>
+
+                <h6 class="small fw-bold text-dark mb-2">Target Tools to Master:</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for t in bridge['gap_tools'] %}
+                    <span class="badge bg-light text-dark border">{{ t }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-Phase Transition Roadmap -->
+    <div class="card card-tech p-4 mb-4 shadow-sm">
+        <h5 class="fw-bold mb-4 text-navy"><i class="bi bi-signpost-2-fill text-primary me-2"></i> 4-Phase Transition Roadmap</h5>
+        <div class="ps-2">
+            {% for phase in bridge['bridge_phases'] %}
+            <div class="timeline-item">
+                <div class="timeline-dot">{{ loop.index }}</div>
+                <h5 class="fw-bold mb-1 small text-dark">{{ phase['phase'] }}</h5>
+                <p class="text-muted small mb-2">{{ phase['focus'] }}</p>
+                <div class="p-2 bg-light rounded small text-dark">
+                    <strong>Action Step:</strong> {{ phase['action'] }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

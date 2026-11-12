@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Trial Lab — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 hero-gradient">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-semibold mb-2">
+                    <i class="bi bi-flask-fill me-1"></i> Interactive Practical Sandbox
+                </span>
+                <h1 class="display-6 fw-bold mb-1">Career Trial Lab</h1>
+                <p class="text-light opacity-90 small mb-0">
+                    Try bite-sized, safe practical tasks associated with technical careers. Experience day-to-day problem solving before deciding which path to explore.
+                </p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <a href="{{ url_for('evidence_check') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-check2-circle me-1"></i> View Skill Evidence Check</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4 mb-4">
+        {% for track_id, t in tracks.items() %}
+        <div class="col-lg-6">
+            <div class="card card-tech h-100 p-4 d-flex flex-column shadow-sm border-top border-4 {% if track_id == 'data_analyst' %}border-info{% elif track_id == 'software_developer' %}border-primary{% elif track_id == 'cybersecurity' %}border-danger{% else %}border-warning{% endif %}">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <span class="p-3 rounded-circle bg-light border me-3">
+                            <i class="bi {{ t['icon'] }} fs-3 {% if track_id == 'data_analyst' %}text-info{% elif track_id == 'software_developer' %}text-primary{% elif track_id == 'cybersecurity' %}text-danger{% else %}text-warning{% endif %}"></i>
+                        </span>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-dark">{{ t['title'] }}</h4>
+                            <small class="text-muted">{{ t['career_name'] }}</small>
+                        </div>
+                    </div>
+                    {% if track_id in completed_tracks %}
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 p-2">
+                        <i class="bi bi-check-circle-fill me-1"></i> Completed ({{ completed_tracks[track_id]['score'] }}/{{ completed_tracks[track_id]['max_score'] }})
+                    </span>
+                    {% else %}
+                    <span class="badge bg-light text-muted border p-2">Not Attempted</span>
+                    {% endif %}
+                </div>
+
+                <p class="text-muted small mb-4 flex-grow-1">
+                    {{ t['overview'] }}
+                </p>
+
+                <div class="p-3 bg-light rounded-3 mb-3 small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold">Task Format:</span>
+                        <span class="text-muted">Interactive Practical Scenarios</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold">Estimated Time:</span>
+                        <span class="text-muted">4–6 Minutes</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">Quest Badge:</span>
+                        <span class="badge bg-light text-dark border"><i class="bi bi-award text-warning me-1"></i> {{ t['badge_title'] }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{{ url_for('trial_lab_task', track_id=track_id) }}" class="btn btn-primary flex-grow-1 fw-semibold">
+                        {% if track_id in completed_tracks %}Retake Lab{% else %}Launch Lab Task &rarr;{% endif %}
+                    </a>
+                    <a href="{{ url_for('career_detail', career_id=t['career_id']) }}" class="btn btn-outline-secondary btn-sm" title="View Related Career Profile">
+                        Career Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Educational Disclaimer -->
+    <div class="callout-disclaimer">
+        <h6 class="fw-bold mb-1"><i class="bi bi-shield-exclamation me-1"></i> Academic Scope Disclaimer</h6>
+        <p class="small mb-0">
+            Career Trial Labs are designed as exploratory introductory exercises to familiarize undergraduate students with domain challenges. A high score in a 3-question lab demonstrates initial aptitude and interest, but does not claim professional qualification or replace semester coursework.
+        </p>
+    </div>
+</div>
+{% endblock %}

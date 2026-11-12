@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}What-If Career Simulator — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 hero-gradient">
+    <div class="container">
+        <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill fw-semibold mb-2">
+            <i class="bi bi-sliders me-1"></i> Interactive Hypothetical Engine
+        </span>
+        <h1 class="display-6 fw-bold mb-1">What-If Career Simulator</h1>
+        <p class="text-light opacity-90 small mb-0">
+            Simulate hypothetical skill improvements, tool acquisitions, and priority shifts. See how your top career matches change without modifying your permanent profile.
+        </p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Simulator Controls Column -->
+        <div class="col-lg-5">
+            <div class="card card-tech p-4 shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-toggles text-primary me-2"></i> Simulation Variables</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="resetSimBtn">Reset to Baseline</button>
+                </div>
+
+                <!-- Skill Sliders -->
+                <h6 class="fw-bold small text-muted text-uppercase mb-2">Hypothetical Skill Upgrades</h6>
+                <div class="mb-4">
+                    {% for sk_name, default_val in [('Python', baseline_answers['skills'].get('Python', 2)), ('SQL', baseline_answers['skills'].get('SQL', 2)), ('HTML/CSS/JavaScript', baseline_answers['skills'].get('HTML/CSS/JavaScript', 2)), ('Data Analysis', baseline_answers['skills'].get('Data Analysis', 2)), ('Networking Fundamentals', baseline_answers['skills'].get('Networking Fundamentals', 1))] %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>{{ sk_name }}</span>
+                            <span class="badge bg-primary sim-skill-val" id="val_{{ loop.index }}">{{ default_val }} / 5</span>
+                        </div>
+                        <input type="range" class="form-range sim-slider" min="0" max="5" step="1" 
+                               value="{{ default_val }}" id="sim_skill_{{ loop.index }}" 
+                               data-skill="{{ sk_name }}" data-label="val_{{ loop.index }}">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Tools Multi-Select -->
+                <h6 class="fw-bold small text-muted text-uppercase mb-2">Add New Tools You Intend to Learn</h6>
+                <div class="row g-2 mb-4">
+                    {% for tool in ['Git / GitHub', 'Docker', 'Power BI / Tableau', 'Postman', 'Linux / Terminal', 'MySQL / SQLite'] %}
+                    <div class="col-6">
+                        <div class="form-check p-2 border rounded bg-light small">
+                            <input class="form-check-input sim-tool-check ms-1 me-2" type="checkbox" value="{{ tool }}" id="sim_tool_{{ loop.index }}" 
+                                   {% if tool in baseline_answers['tools'] %}checked{% endif %}>
+                            <label class="form-check-label" for="sim_tool_{{ loop.index }}">{{ tool }}</label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Coding Intensity Preference -->
+                <h6 class="fw-bold small text-muted text-uppercase mb-2">Simulate Work Preference Change</h6>
+                <div class="mb-4">
+                    <select class="form-select form-select-sm" id="sim_coding_intensity">
+                        <option value="High" {% if baseline_answers['work_preferences'].get('coding_intensity') == 'High' %}selected{% endif %}>Coding-Intensive (Heavy Software Architecture)</option>
+                        <option value="Moderate" {% if baseline_answers['work_preferences'].get('coding_intensity') == 'Moderate' %}selected{% endif %}>Moderate Coding (Hybrid Development &amp; Analysis)</option>
+                        <option value="Low" {% if baseline_answers['work_preferences'].get('coding_intensity') == 'Low' %}selected{% endif %}>Less Coding-Intensive (System Configuration &amp; Design)</option>
+                    </select>
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn btn-primary fw-bold py-2 shadow" id="runSimulationBtn">
+                        <i class="bi bi-play-circle-fill me-1"></i> Recalculate Simulated Rankings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Comparison Output Column -->
+        <div class="col-lg-7">
+            <div class="card card-tech p-4 shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-arrow-left-right text-success me-2"></i> Before &amp; After Comparison</h5>
+                    <span class="badge bg-info text-dark" id="simStatusBadge">Baseline Mode</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Role</th>
+                                <th>Baseline Score</th>
+                                <th>Simulated Score</th>
+                                <th>Score Difference</th>
+                                <th>Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="simulationResultsTable">
+                            {% for rec in baseline_results %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ rec['display_name'] }}</td>
+                                <td class="text-muted">{{ rec['match_score'] }}%</td>
+                                <td class="fw-semibold text-primary sim-score-cell">{{ rec['match_score'] }}%</td>
+                                <td class="sim-diff-cell"><span class="badge bg-light text-muted border">0.0%</span></td>
+                                <td><span class="badge bg-secondary">Baseline</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Simulation Explanation Callout -->
+            <div class="card card-tech p-4 bg-light shadow-sm" id="simulationDriverCard">
+                <h6 class="fw-bold mb-2 text-primary"><i class="bi bi-info-circle me-1"></i> What caused the simulated score changes?</h6>
+                <p class="small text-muted mb-0" id="simExplanationText">
+                    Adjust the sliders or select new tools on the left and click 'Recalculate Simulated Rankings' to analyze how skill changes impact your recommendation trajectory.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sliders = document.querySelectorAll('.sim-slider');
+    sliders.forEach(s => {
+        s.addEventListener('input', function() {
+            const labelId = this.getAttribute('data-label');
+            const lbl = document.getElementById(labelId);
+            if (lbl) lbl.textContent = this.value + ' / 5';
+        });
+    });
+
+    const runBtn = document.getElementById('runSimulationBtn');
+    if (runBtn) {
+        runBtn.addEventListener('click', function() {
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Calculating...';
+
+            const skillsPayload = {};
+            sliders.forEach(s => {
+                skillsPayload[s.getAttribute('data-skill')] = parseInt(s.value);
+            });
+
+            const toolsPayload = [];
+            document.querySelectorAll('.sim-tool-check:checked').forEach(c => {
+                toolsPayload.push(c.value);
+            });
+
+            const codingIntensity = document.getElementById('sim_coding_intensity').value;
+
+            fetch('/api/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    skills: skillsPayload,
+                    tools: toolsPayload,
+                    coding_intensity: codingIntensity
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Recalculate Simulated Rankings';
+
+                if (data.status === 'success') {
+                    document.getElementById('simStatusBadge').className = 'badge bg-success text-white';
+                    document.getElementById('simStatusBadge').textContent = 'Simulation Active';
+
+                    const tbody = document.getElementById('simulationResultsTable');
+                    tbody.innerHTML = '';
+
+                    let highestGainer = '';
+                    let maxDiff = -999;
+
+                    data.diffs.forEach(d => {
+                        if (d.score_diff > maxDiff) {
+                            maxDiff = d.score_diff;
+                            highestGainer = d.display_name;
+                        }
+
+                        let badgeHtml = '';
+                        if (d.score_diff > 0) {
+                            badgeHtml = '<span class="badge bg-success"><i class="bi bi-arrow-up"></i> +' + d.score_diff + '%</span>';
+                        } else if (d.score_diff < 0) {
+                            badgeHtml = '<span class="badge bg-danger"><i class="bi bi-arrow-down"></i> ' + d.score_diff + '%</span>';
+                        } else {
+                            badgeHtml = '<span class="badge bg-light text-muted border">0.0%</span>';
+                        }
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="fw-bold text-dark">${d.display_name}</td>
+                            <td class="text-muted">${d.baseline_score}%</td>
+                            <td class="fw-bold text-primary">${d.simulated_score}%</td>
+                            <td>${badgeHtml}</td>
+                            <td><span class="badge ${d.score_diff > 0 ? 'bg-success bg-opacity-25 text-success border border-success border-opacity-25' : 'bg-light text-muted border'}">${d.score_diff > 0 ? 'Positive Match' : 'Unchanged'}</span></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    // Update driver explanation
+                    const explText = document.getElementById('simExplanationText');
+                    if (maxDiff > 0) {
+                        explText.textContent = 'Simulated increases in selected skills elevated ' + highestGainer + ' by +' + maxDiff + '%. Increasing fundamental programming languages and practical tools like Git directly closes skill gaps in related roles.';
+                    } else {
+                        explText.textContent = 'Current simulated inputs maintained comparable alignment across top roles. Try increasing specific technical proficiencies (e.g. Python to 4/5 or SQL to 4/5) to trigger more pronounced shifts.';
+                    }
+
+                    showToast('Simulation updated successfully! Quest badge awarded.', 'success');
+                }
+            })
+            .catch(err => {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Recalculate Simulated Rankings';
+                console.error(err);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

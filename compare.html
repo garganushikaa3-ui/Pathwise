@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Comparison — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-2">
+            <div>
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill fw-semibold mb-1">
+                    Multi-Career Decision Matrix
+                </span>
+                <h2 class="fw-bold mb-1">Side-by-Side Career Comparison</h2>
+                <p class="text-muted small mb-0">Compare technical career options side-by-side across personalized match scores, skills, tools, verified salaries, and outlooks.</p>
+            </div>
+            {% if suggested_careers %}
+            <div class="mt-3 mt-md-0">
+                <a href="{{ url_for('recommendations_view') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-stars me-1"></i> Back to All Recommendations
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if suggested_careers %}
+        <!-- Quick Compare Shortcuts for Suggested Careers -->
+        <div class="card card-tech p-3 mt-3 bg-white border-primary border-opacity-25 shadow-sm">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="small fw-bold text-navy me-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Compare Suggested:</span>
+                {% if suggested_careers|length >= 2 %}
+                <a href="{{ url_for('compare', c1=suggested_careers[0]['career_id'], c2=suggested_careers[1]['career_id']) }}" 
+                   class="btn btn-sm {% if c1['id'] == suggested_careers[0]['career_id'] and c2['id'] == suggested_careers[1]['career_id'] and not c3 %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">
+                    ⭐ #1 {{ suggested_careers[0]['display_name'] }} vs #2 {{ suggested_careers[1]['display_name'] }}
+                </a>
+                {% endif %}
+                {% if suggested_careers|length >= 3 %}
+                <a href="{{ url_for('compare', c1=suggested_careers[0]['career_id'], c2=suggested_careers[2]['career_id']) }}" 
+                   class="btn btn-sm {% if c1['id'] == suggested_careers[0]['career_id'] and c2['id'] == suggested_careers[2]['career_id'] and not c3 %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">
+                    ⭐ #1 {{ suggested_careers[0]['display_name'] }} vs #3 {{ suggested_careers[2]['display_name'] }}
+                </a>
+                <a href="{{ url_for('compare', c1=suggested_careers[0]['career_id'], c2=suggested_careers[1]['career_id'], c3=suggested_careers[2]['career_id']) }}" 
+                   class="btn btn-sm {% if c3 and c3['id'] == suggested_careers[2]['career_id'] %}btn-warning text-dark fw-semibold{% else %}btn-outline-warning text-dark{% endif %} rounded-pill">
+                    <i class="bi bi-grid-3x2-gap-fill me-1"></i> Compare All Top 3 Together
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Selection Controls Form -->
+        <form method="GET" action="{{ url_for('compare') }}" class="row g-3 align-items-end mt-2">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">First Career (Career 1)</label>
+                <select name="c1" class="form-select">
+                    {% if suggested_careers %}
+                    <optgroup label="⭐ Your Suggested Career Recommendations">
+                        {% for sc in suggested_careers[:5] %}
+                        <option value="{{ sc['career_id'] }}" {% if c1 and c1['id'] == sc['career_id'] %}selected{% endif %}>
+                            ⭐ #{{ loop.index }} {{ sc['display_name'] }} ({{ sc['match_score'] }}% Match)
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="All Technical Careers">
+                    {% endif %}
+                    {% for c in all_careers %}
+                    <option value="{{ c['id'] }}" {% if c1 and c1['id'] == c['id'] %}selected{% endif %}>{{ c['display_name'] }} ({{ c['category'] }})</option>
+                    {% endfor %}
+                    {% if suggested_careers %}</optgroup>{% endif %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">Second Career (Career 2)</label>
+                <select name="c2" class="form-select">
+                    {% if suggested_careers %}
+                    <optgroup label="⭐ Your Suggested Career Recommendations">
+                        {% for sc in suggested_careers[:5] %}
+                        <option value="{{ sc['career_id'] }}" {% if c2 and c2['id'] == sc['career_id'] %}selected{% endif %}>
+                            ⭐ #{{ loop.index }} {{ sc['display_name'] }} ({{ sc['match_score'] }}% Match)
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="All Technical Careers">
+                    {% endif %}
+                    {% for c in all_careers %}
+                    <option value="{{ c['id'] }}" {% if c2 and c2['id'] == c['id'] %}selected{% endif %}>{{ c['display_name'] }} ({{ c['category'] }})</option>
+                    {% endfor %}
+                    {% if suggested_careers %}</optgroup>{% endif %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted">Third Career (Optional 3-Way)</label>
+                <select name="c3" class="form-select">
+                    <option value="">-- None (2-Way Compare) --</option>
+                    {% if suggested_careers %}
+                    <optgroup label="⭐ Your Suggested Career Recommendations">
+                        {% for sc in suggested_careers[:5] %}
+                        <option value="{{ sc['career_id'] }}" {% if c3 and c3['id'] == sc['career_id'] %}selected{% endif %}>
+                            ⭐ #{{ loop.index }} {{ sc['display_name'] }} ({{ sc['match_score'] }}% Match)
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="All Technical Careers">
+                    {% endif %}
+                    {% for c in all_careers %}
+                    <option value="{{ c['id'] }}" {% if c3 and c3['id'] == c['id'] %}selected{% endif %}>{{ c['display_name'] }} ({{ c['category'] }})</option>
+                    {% endfor %}
+                    {% if suggested_careers %}</optgroup>{% endif %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100" title="Update Comparison"><i class="bi bi-arrow-repeat"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="card card-tech shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 22%;">Comparison Dimension</th>
+                        <th style="width: {% if c3 %}26%{% else %}39%{% endif %};" class="bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold">{{ c1['display_name'] }}</span>
+                                {% if c1_match %}
+                                <span class="badge bg-white text-primary fw-extrabold fs-6">{{ c1_match['match_score'] }}% Fit</span>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th style="width: {% if c3 %}26%{% else %}39%{% endif %};" class="bg-navy text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold">{{ c2['display_name'] }}</span>
+                                {% if c2_match %}
+                                <span class="badge bg-white text-navy fw-extrabold fs-6">{{ c2_match['match_score'] }}% Fit</span>
+                                {% endif %}
+                            </div>
+                        </th>
+                        {% if c3 %}
+                        <th style="width: 26%;" class="bg-teal text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold">{{ c3['display_name'] }}</span>
+                                {% if c3_match %}
+                                <span class="badge bg-white text-teal fw-extrabold fs-6">{{ c3_match['match_score'] }}% Fit</span>
+                                {% endif %}
+                            </div>
+                        </th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if c1_match or c2_match %}
+                    <tr class="table-info bg-opacity-25">
+                        <td class="fw-bold"><i class="bi bi-stars text-warning me-1"></i> Your Compatibility Match</td>
+                        <td>
+                            {% if c1_match %}
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-extrabold text-primary fs-5">{{ c1_match['match_score'] }}%</span>
+                                <span class="badge bg-{{ c1_match['readiness_badge'] }}">{{ c1_match['readiness_level'] }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">Not evaluated</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if c2_match %}
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-extrabold text-navy fs-5">{{ c2_match['match_score'] }}%</span>
+                                <span class="badge bg-{{ c2_match['readiness_badge'] }}">{{ c2_match['readiness_level'] }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">Not evaluated</span>
+                            {% endif %}
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            {% if c3_match %}
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-extrabold text-teal fs-5">{{ c3_match['match_score'] }}%</span>
+                                <span class="badge bg-{{ c3_match['readiness_badge'] }}">{{ c3_match['readiness_level'] }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">Not evaluated</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-check-circle-fill text-success me-1"></i> Your Matching Strengths</td>
+                        <td>
+                            {% if c1_match and c1_match['matched_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for ms in c1_match['matched_skills'] %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ ms['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">General background</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if c2_match and c2_match['matched_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for ms in c2_match['matched_skills'] %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ ms['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">General background</span>
+                            {% endif %}
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            {% if c3_match and c3_match['matched_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for ms in c3_match['matched_skills'] %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ ms['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">General background</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-arrow-up-circle-fill text-warning me-1"></i> Your Skill Gaps to Bridge</td>
+                        <td>
+                            {% if c1_match and c1_match['missing_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for gs in c1_match['missing_skills'][:3] %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">{{ gs['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">No significant gaps</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if c2_match and c2_match['missing_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for gs in c2_match['missing_skills'][:3] %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">{{ gs['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">No significant gaps</span>
+                            {% endif %}
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            {% if c3_match and c3_match['missing_skills'] %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for gs in c3_match['missing_skills'][:3] %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">{{ gs['name'] }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">No significant gaps</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="fw-bold bg-light">Technical Category</td>
+                        <td><span class="badge-category">{{ c1['category'] }}</span></td>
+                        <td><span class="badge-category">{{ c2['category'] }}</span></td>
+                        {% if c3 %}<td><span class="badge-category">{{ c3['category'] }}</span></td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Coding Intensity</td>
+                        <td><span class="badge bg-light text-dark border">{{ c1['coding_intensity'] }}</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ c2['coding_intensity'] }}</span></td>
+                        {% if c3 %}<td><span class="badge bg-light text-dark border">{{ c3['coding_intensity'] }}</span></td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">India Tech Benchmark (INR)</td>
+                        <td class="fw-bold text-primary fs-6">{{ c1['median_salary_inr_benchmark'] }}</td>
+                        <td class="fw-bold text-primary fs-6">{{ c2['median_salary_inr_benchmark'] }}</td>
+                        {% if c3 %}<td class="fw-bold text-primary fs-6">{{ c3['median_salary_inr_benchmark'] }}</td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">U.S. BLS Median Annual Wage</td>
+                        <td class="fw-bold text-success">${{ "{:,}".format(c1['median_salary_usd']) }} (2025)</td>
+                        <td class="fw-bold text-success">${{ "{:,}".format(c2['median_salary_usd']) }} (2025)</td>
+                        {% if c3 %}<td class="fw-bold text-success">${{ "{:,}".format(c3['median_salary_usd']) }} (2025)</td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">10-Year Growth Projection</td>
+                        <td><span class="badge bg-success">+{{ c1['job_outlook_pct'] }}%</span> (2025–35)</td>
+                        <td><span class="badge bg-success">+{{ c2['job_outlook_pct'] }}%</span> (2025–35)</td>
+                        {% if c3 %}<td><span class="badge bg-success">+{{ c3['job_outlook_pct'] }}%</span> (2025–35)</td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Typical Entry Education</td>
+                        <td class="small">{{ c1['education_requirements'] }}</td>
+                        <td class="small">{{ c2['education_requirements'] }}</td>
+                        {% if c3 %}<td class="small">{{ c3['education_requirements'] }}</td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Related Experience Needed</td>
+                        <td class="small">{{ c1['related_work_experience'] }}</td>
+                        <td class="small">{{ c2['related_work_experience'] }}</td>
+                        {% if c3 %}<td class="small">{{ c3['related_work_experience'] }}</td>{% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Essential Technical Skills</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in c1['technical_skills'] %}
+                                <span class="badge bg-light text-dark border">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in c2['technical_skills'] %}
+                                <span class="badge bg-light text-dark border">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in c3['technical_skills'] %}
+                                <span class="badge bg-light text-dark border">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Representative Tools &amp; Software</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for t in c1['software_tools'][:8] %}
+                                <span class="badge bg-light text-secondary border small">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for t in c2['software_tools'][:8] %}
+                                <span class="badge bg-light text-secondary border small">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for t in c3['software_tools'][:8] %}
+                                <span class="badge bg-light text-secondary border small">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Actions &amp; Deep-Dive</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('career_detail', career_id=c1['id']) }}" class="btn btn-sm btn-outline-primary">Profile</a>
+                                <a href="{{ url_for('roadmap', career_id=c1['id']) }}" class="btn btn-sm btn-outline-secondary">Roadmap</a>
+                                <a href="{{ url_for('skill_gap', career_id=c1['id']) }}" class="btn btn-sm btn-outline-teal">Skill Gap</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('career_detail', career_id=c2['id']) }}" class="btn btn-sm btn-outline-primary">Profile</a>
+                                <a href="{{ url_for('roadmap', career_id=c2['id']) }}" class="btn btn-sm btn-outline-secondary">Roadmap</a>
+                                <a href="{{ url_for('skill_gap', career_id=c2['id']) }}" class="btn btn-sm btn-outline-teal">Skill Gap</a>
+                            </div>
+                        </td>
+                        {% if c3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('career_detail', career_id=c3['id']) }}" class="btn btn-sm btn-outline-primary">Profile</a>
+                                <a href="{{ url_for('roadmap', career_id=c3['id']) }}" class="btn btn-sm btn-outline-secondary">Roadmap</a>
+                                <a href="{{ url_for('skill_gap', career_id=c3['id']) }}" class="btn btn-sm btn-outline-teal">Skill Gap</a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

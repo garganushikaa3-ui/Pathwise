@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Skill-Gap Analysis for {{ career['display_name'] }} — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-7">
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill fw-semibold mb-1">
+                    Diagnostic Analysis
+                </span>
+                <h2 class="fw-bold mb-1">Skill-Gap Analysis: {{ career['display_name'] }}</h2>
+                <p class="text-muted small mb-0">Compares skills required by the occupation against your reported competencies and practical task records.</p>
+            </div>
+            <div class="col-lg-5 text-lg-end">
+                <!-- Career Selector -->
+                <form method="GET" action="{{ url_for('skill_gap') }}" class="d-inline-flex gap-2">
+                    <select name="career_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                        {% for c in all_careers %}
+                        <option value="{{ c['id'] }}" {% if c['id'] == career['id'] %}selected{% endif %}>{{ c['display_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if not analysis %}
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            <strong>You have not completed the Career Assessment yet.</strong>
+            <p class="mb-0 small">Take the 6-step assessment questionnaire to enable automatic personalization of your skills and tool gaps.</p>
+        </div>
+        <a href="{{ url_for('assessment') }}" class="btn btn-sm btn-primary ms-auto text-nowrap">Take Assessment</a>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <!-- 3 Categorized Skill Buckets -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-tech h-100 p-4 border-top border-4 border-success shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-success mb-0"><i class="bi bi-check-circle-fill me-2"></i> Strong Reported Match</h5>
+                    <span class="badge bg-success">{{ analysis['matched_skills']|length if analysis else 0 }}</span>
+                </div>
+                <p class="small text-muted mb-3">Competencies you self-rated at Level 3 (Intermediate) or higher that directly align with this role.</p>
+
+                {% if analysis and analysis['matched_skills'] %}
+                <ul class="list-group list-group-flush small">
+                    {% for ms in analysis['matched_skills'] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-semibold">{{ ms['name'] }}</span>
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">{{ ms['rating'] }} / 5</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="small text-muted mb-0">No strong matches recorded yet. Complete the assessment or practice in the lab.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-tech h-100 p-4 border-top border-4 border-warning shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-warning mb-0"><i class="bi bi-arrow-up-circle-fill me-2"></i> Needs Improvement</h5>
+                    <span class="badge bg-warning text-dark">{{ (analysis['missing_skills']|selectattr('status', 'equalto', 'Needs Practice')|list)|length if analysis else 0 }}</span>
+                </div>
+                <p class="small text-muted mb-3">Skills where you have basic awareness (Level 1–2) but need targeted project practice for entry competency.</p>
+
+                {% if analysis %}
+                <ul class="list-group list-group-flush small">
+                    {% for ms in analysis['missing_skills'] if ms['status'] == 'Needs Practice' %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-semibold">{{ ms['name'] }}</span>
+                        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-25">{{ ms['current_level'] }} / 5</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item px-0 text-muted small">None in this tier.</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="small text-muted mb-0">Assessment data not available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-tech h-100 p-4 border-top border-4 border-danger shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-danger mb-0"><i class="bi bi-x-circle-fill me-2"></i> Not Yet Learned</h5>
+                    <span class="badge bg-danger">{{ (analysis['missing_skills']|selectattr('status', 'equalto', 'Not Learned Yet')|list)|length if analysis else career['technical_skills']|length }}</span>
+                </div>
+                <p class="small text-muted mb-3">Critical domain competencies where you currently have no reported familiarity.</p>
+
+                {% if analysis %}
+                <ul class="list-group list-group-flush small">
+                    {% for ms in analysis['missing_skills'] if ms['status'] == 'Not Learned Yet' %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-semibold">{{ ms['name'] }}</span>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Level 0</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item px-0 text-muted small">You have learned all core skills to some degree!</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <ul class="list-group list-group-flush small">
+                    {% for s in career['technical_skills'] %}
+                    <li class="list-group-item px-0 text-muted">{{ s }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Practical Evidence & Tools Section -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card card-tech p-4 h-100 shadow-sm">
+                <h5 class="fw-bold mb-3"><i class="bi bi-tools text-teal me-2"></i> Tools Gap &amp; Familiarity Check</h5>
+                <div class="mb-3">
+                    <div class="small fw-semibold text-success mb-2"><i class="bi bi-check2-circle"></i> Tools You Already Know:</div>
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        {% if analysis and analysis['matched_tools'] %}
+                            {% for t in analysis['matched_tools'] %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ t }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">No tool overlap recorded from assessment.</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="small fw-semibold text-warning mb-2"><i class="bi bi-arrow-up-right-circle"></i> High-Priority Tools to Install &amp; Learn:</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% if analysis and analysis['missing_tools'] %}
+                            {% for t in analysis['missing_tools'] %}
+                            <span class="badge bg-light text-dark border">{{ t }}</span>
+                            {% endfor %}
+                        {% else %}
+                            {% for t in career['software_tools'][:6] %}
+                            <span class="badge bg-light text-dark border">{{ t }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card card-tech p-4 h-100 shadow-sm">
+                <h5 class="fw-bold mb-3"><i class="bi bi-flask text-warning me-2"></i> Demonstrated Practical Lab Evidence</h5>
+                <p class="small text-muted mb-3">
+                    Have you verified your intuition for this domain? Solve a practical scenario in the Career Trial Lab to earn demonstrated evidence badges.
+                </p>
+
+                <div class="p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold small">Associated Practical Lab Track:</span>
+                        <span class="badge bg-warning text-dark">Trial Lab Available</span>
+                    </div>
+                    <p class="small text-muted mb-2">Test your practical problem-solving logic before undertaking full semester courses.</p>
+                    <a href="{{ url_for('trial_lab_index') }}" class="btn btn-sm btn-warning text-dark fw-semibold">
+                        <i class="bi bi-flask me-1"></i> Launch Career Trial Lab
+                    </a>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('roadmap', career_id=career['id']) }}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                        <i class="bi bi-signpost-2 me-1"></i> Follow {{ career['display_name'] }} Roadmap
+                    </a>
+                    <a href="{{ url_for('evidence_check') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Evidence Check
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

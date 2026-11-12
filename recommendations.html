@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Recommendations — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-4 hero-gradient">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill fw-semibold mb-2">
+                    <i class="bi bi-cpu me-1"></i> Explainable Results Generated
+                </span>
+                <h1 class="display-6 fw-bold mb-1">Your Technical Career Recommendations</h1>
+                <p class="text-light opacity-90 small mb-0">
+                    Calculated by evaluating your academic qualification, self-rated skills, known tools, and work preferences against verified O*NET models.
+                </p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+                <button onclick="window.print()" class="btn btn-light btn-sm fw-semibold"><i class="bi bi-printer me-1"></i> Print Action Plan</button>
+                <a href="{{ url_for('assessment') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-pencil-square me-1"></i> Edit Answers</a>
+                <a href="{{ url_for('simulator') }}" class="btn btn-warning btn-sm text-dark fw-semibold"><i class="bi bi-sliders me-1"></i> What-If Simulator</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Priority Weight Sliders Accordion -->
+    <div class="card card-tech mb-4 border-primary border-opacity-25 shadow-sm">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center cursor-pointer" data-bs-toggle="collapse" data-bs-target="#weightSlidersPanel">
+                <div class="d-flex align-items-center">
+                    <span class="p-2 rounded bg-primary bg-opacity-10 text-primary me-2"><i class="bi bi-sliders2 fs-5"></i></span>
+                    <div>
+                        <h6 class="fw-bold mb-0">Adjust Career Priority Weights Dynamically</h6>
+                        <small class="text-muted">Slide priorities to see real-time recalculations without re-taking the questionnaire.</small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-chevron-down"></i> Adjust Priorities</button>
+            </div>
+
+            <div class="collapse pt-3 mt-3 border-top" id="weightSlidersPanel">
+                <div class="row g-3 small">
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Interests Weight</span>
+                            <span id="label_w_interests">30%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_interests" min="0" max="60" value="30">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Current Skills Weight</span>
+                            <span id="label_w_skills">30%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_skills" min="0" max="60" value="30">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Tools Familiarity Weight</span>
+                            <span id="label_w_tools">15%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_tools" min="0" max="40" value="15">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Education Match Weight</span>
+                            <span id="label_w_education">15%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_education" min="0" max="40" value="15">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Work Preferences Weight</span>
+                            <span id="label_w_work_preferences">10%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_work_preferences" min="0" max="30" value="10">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label d-flex justify-content-between fw-semibold">
+                            <span>Salary &amp; Growth Priority</span>
+                            <span id="label_w_salary">0%</span>
+                        </label>
+                        <input type="range" class="form-range priority-slider" id="w_salary" min="0" max="30" value="0">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" id="resetWeightsBtn">Reset to Standard Weights</button>
+                    <button class="btn btn-sm btn-primary" id="applyWeightsBtn"><i class="bi bi-arrow-repeat me-1"></i> Recalculate Live</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- #1 BEST FIT HIGHLIGHT WITH RADAR CHART -->
+    {% if top_3 %}
+    {% set best = top_3[0] %}
+    <div class="card card-tech mb-5 p-4 border-primary shadow-sm bg-white">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1 fw-bold">
+                        <i class="bi bi-trophy-fill me-1"></i> #1 Strongest Match
+                    </span>
+                    <span class="badge-category">{{ best['category'] }}</span>
+                    <span class="badge bg-light text-dark border">{{ best['coding_intensity'] }} Coding</span>
+                </div>
+                <h2 class="fw-extrabold text-navy mb-2">{{ best['display_name'] }}</h2>
+                <p class="text-muted small mb-3">{{ best['description'] }}</p>
+
+                <div class="row g-2 mb-3 small">
+                    <div class="col-sm-6">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted d-block" style="font-size: 0.75rem;">India Tech Benchmark:</span>
+                            <strong class="text-primary fs-6">{{ best['median_salary_inr_benchmark'] }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted d-block" style="font-size: 0.75rem;">U.S. BLS 2025 Median:</span>
+                            <strong class="text-success fs-6">${{ "{:,}".format(best['median_salary_usd']) }} / yr</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('career_detail', career_id=best['career_id']) }}" class="btn btn-primary btn-sm fw-semibold">
+                        <i class="bi bi-person-badge me-1"></i> Full Career Profile
+                    </a>
+                    <a href="{{ url_for('roadmap', career_id=best['career_id']) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-signpost-2 me-1"></i> Step-by-Step Roadmap
+                    </a>
+                    <a href="{{ url_for('skill_gap', career_id=best['career_id']) }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-bar-chart-steps me-1"></i> Skill Gap
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-5 text-center">
+                <h6 class="fw-bold text-muted small text-uppercase mb-1">5-Factor Compatibility Radar</h6>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="topMatchRadarChart"></canvas>
+                </div>
+                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                    Overall Compatibility: <strong class="text-primary">{{ best['match_score'] }}%</strong> &bull; Readiness: <span class="badge bg-{{ best['readiness_badge'] }}">{{ best['readiness_level'] }}</span>
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TOP 3 RECOMMENDATIONS -->
+    <h4 class="fw-bold mb-3"><i class="bi bi-trophy-fill text-warning me-2"></i> Top Career Matches</h4>
+    <div class="row g-4 mb-5" id="topRecommendationsContainer">
+        {% for rec in top_3 %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-tech h-100 shadow-sm border-top border-4 border-primary position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <button class="btn btn-sm btn-light border btn-save-career rounded-circle" data-career-id="{{ rec['career_id'] }}" title="Save to Dashboard">
+                        <i class="bi {% if rec['career_id'] in saved_career_ids %}bi-bookmark-check-fill text-warning{% else %}bi-bookmark{% endif %}"></i>
+                    </button>
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary text-white rounded-pill px-2 py-1 me-2">#{{ loop.index }}</span>
+                        <span class="badge-category">{{ rec['category'] }}</span>
+                    </div>
+
+                    <h4 class="fw-bold mb-2 text-dark">{{ rec['display_name'] }}</h4>
+                    <p class="small text-muted mb-3 flex-grow-1">{{ rec['description'][:140] }}...</p>
+
+                    <!-- Match Score & Readiness Meter -->
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-semibold text-muted">Overall Compatibility</span>
+                            <span class="fs-4 fw-extrabold text-primary">{{ rec['match_score'] }}%</span>
+                        </div>
+                        <div class="progress progress-match mb-2">
+                            <div class="progress-bar {% if rec['match_score'] >= 75 %}bg-success{% elif rec['match_score'] >= 50 %}bg-primary{% else %}bg-warning{% endif %}" 
+                                 style="width: {{ rec['match_score'] }}%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center" style="font-size: 0.78rem;">
+                            <span>Readiness Level:</span>
+                            <span class="badge bg-{{ rec['readiness_badge'] }}">{{ rec['readiness_level'] }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Verified Salary & Outlook (Explicitly Attributed) -->
+                    <div class="border rounded p-2 mb-3 bg-white" style="font-size: 0.8rem;">
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted"><i class="bi bi-cash-stack text-success me-1"></i> U.S. BLS Median:</span>
+                            <span class="fw-bold">${{ "{:,}".format(rec['median_salary_usd']) }} / yr (2025)</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted"><i class="bi bi-currency-rupee text-primary me-1"></i> India Tech Benchmark:</span>
+                            <span class="fw-bold text-primary">{{ rec['median_salary_inr_benchmark'] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted"><i class="bi bi-graph-up text-teal me-1"></i> 10-Yr Job Outlook:</span>
+                            <span class="fw-bold text-success">+{{ rec['job_outlook_pct'] }}% (2025–35)</span>
+                        </div>
+                    </div>
+
+                    <!-- Explainability Summary -->
+                    <div class="mb-3 small">
+                        <div class="fw-semibold text-dark mb-1"><i class="bi bi-chat-square-quote text-info me-1"></i> Why this matched you:</div>
+                        <ul class="list-unstyled text-muted ps-1 mb-0" style="font-size: 0.82rem;">
+                            {% for r in rec['reasons'][:2] %}
+                            <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> {{ r }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Matched vs Gap Skills -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Strong Skills ({{ rec['matched_skills']|length }})</span>
+                            <span class="text-warning">Gaps to Learn ({{ rec['missing_skills']|length }})</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for s in rec['matched_skills'][:2] %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.72rem;">{{ s['name'] }}</span>
+                            {% endfor %}
+                            {% for g in rec['missing_skills'][:2] %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" style="font-size: 0.72rem;">{{ g['name'] }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mt-auto">
+                        <a href="{{ url_for('career_detail', career_id=rec['career_id']) }}" class="btn btn-outline-primary btn-sm fw-semibold">
+                            Complete Career Profile &rarr;
+                        </a>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('skill_gap', career_id=rec['career_id']) }}" class="btn btn-outline-secondary">Skill Gap</a>
+                            <a href="{{ url_for('roadmap', career_id=rec['career_id']) }}" class="btn btn-outline-secondary">Roadmap</a>
+                            <a href="{{ url_for('compare', c1=rec['career_id']) }}" class="btn btn-outline-secondary">Compare</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- SUGGESTED CAREERS COMPARISON MODULE -->
+    {% if top_3|length >= 2 %}
+    <div class="card card-tech mb-5 shadow-sm border-primary border-opacity-50 overflow-hidden">
+        <div class="card-header bg-navy text-white p-3 p-md-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold small mb-1">
+                    <i class="bi bi-arrow-left-right me-1"></i> Interactive Decision Support
+                </span>
+                <h4 class="fw-bold mb-1 text-white">Compare Your Top Suggested Careers Side-by-Side</h4>
+                <p class="text-light opacity-80 small mb-0">Evaluate how your recommended paths compare across compatibility, salary expectations, coding demand, and your skill strengths vs gaps.</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2">
+                <a href="{{ url_for('compare', c1=top_3[0]['career_id'], c2=top_3[1]['career_id'], c3=top_3[2]['career_id'] if top_3|length > 2 else '') }}" 
+                   class="btn btn-warning btn-sm text-dark fw-bold px-3 shadow-sm">
+                    <i class="bi bi-arrows-fullscreen me-1"></i> Open Full Comparison Lab &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick 2-Way Comparison Buttons -->
+        <div class="p-3 bg-light border-bottom d-flex flex-wrap align-items-center gap-2">
+            <span class="small fw-bold text-muted me-1">Quick Comparison Shortcuts:</span>
+            <a href="{{ url_for('compare', c1=top_3[0]['career_id'], c2=top_3[1]['career_id']) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                ⭐ #1 {{ top_3[0]['display_name'] }} vs #2 {{ top_3[1]['display_name'] }}
+            </a>
+            {% if top_3|length >= 3 %}
+            <a href="{{ url_for('compare', c1=top_3[0]['career_id'], c2=top_3[2]['career_id']) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                ⭐ #1 {{ top_3[0]['display_name'] }} vs #3 {{ top_3[2]['display_name'] }}
+            </a>
+            <a href="{{ url_for('compare', c1=top_3[1]['career_id'], c2=top_3[2]['career_id']) }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                #2 {{ top_3[1]['display_name'] }} vs #3 {{ top_3[2]['display_name'] }}
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Side-by-Side Comparison Matrix Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 20%;" class="bg-secondary text-white">Feature / Metric</th>
+                        {% for rec in top_3 %}
+                        <th style="width: {% if top_3|length == 2 %}40%{% else %}26.6%{% endif %};" class="{% if loop.index == 1 %}bg-primary{% elif loop.index == 2 %}bg-navy{% else %}bg-teal{% endif %} text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-white text-dark me-1">#{{ loop.index }}</span>
+                                    <span class="fw-bold fs-6">{{ rec['display_name'] }}</span>
+                                </div>
+                                <span class="badge bg-light text-dark fw-extrabold">{{ rec['match_score'] }}%</span>
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-stars text-warning me-1"></i> Compatibility &amp; Readiness</td>
+                        {% for rec in top_3 %}
+                        <td>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-extrabold text-primary fs-5">{{ rec['match_score'] }}%</span>
+                                <span class="badge bg-{{ rec['readiness_badge'] }}">{{ rec['readiness_level'] }}</span>
+                            </div>
+                            <div class="progress progress-match" style="height: 6px;">
+                                <div class="progress-bar {% if rec['match_score'] >= 75 %}bg-success{% elif rec['match_score'] >= 50 %}bg-primary{% else %}bg-warning{% endif %}" 
+                                     style="width: {{ rec['match_score'] }}%;"></div>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-currency-rupee text-primary me-1"></i> India Tech Benchmark</td>
+                        {% for rec in top_3 %}
+                        <td class="fw-bold text-primary">{{ rec['median_salary_inr_benchmark'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-cash-stack text-success me-1"></i> U.S. BLS 2025 Median</td>
+                        {% for rec in top_3 %}
+                        <td class="fw-semibold text-success">${{ "{:,}".format(rec['median_salary_usd']) }} / yr</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-graph-up text-teal me-1"></i> 10-Yr Job Growth Outlook</td>
+                        {% for rec in top_3 %}
+                        <td><span class="badge bg-success">+{{ rec['job_outlook_pct'] }}%</span> <small class="text-muted">(2025–35)</small></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-laptop text-info me-1"></i> Coding Intensity</td>
+                        {% for rec in top_3 %}
+                        <td><span class="badge bg-light text-dark border">{{ rec['coding_intensity'] }}</span></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-check2-circle text-success me-1"></i> Your Matching Strengths</td>
+                        {% for rec in top_3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in rec['matched_skills'] %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.72rem;">{{ s['name'] }}</span>
+                                {% else %}
+                                <span class="text-muted small">Foundational CS coursework</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-arrow-up-circle text-warning me-1"></i> Top Skill Gaps to Bridge</td>
+                        {% for rec in top_3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for g in rec['missing_skills'][:3] %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25" style="font-size: 0.72rem;">{{ g['name'] }}</span>
+                                {% else %}
+                                <span class="text-muted small">None significant</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light"><i class="bi bi-tools text-secondary me-1"></i> Industry Tools Used</td>
+                        {% for rec in top_3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for t in rec['matched_tools'][:4] %}
+                                <span class="badge bg-light text-secondary border small">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Exploration Actions</td>
+                        {% for rec in top_3 %}
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                <a href="{{ url_for('career_detail', career_id=rec['career_id']) }}" class="btn btn-xs btn-outline-primary btn-sm">Profile</a>
+                                <a href="{{ url_for('roadmap', career_id=rec['career_id']) }}" class="btn btn-xs btn-outline-secondary btn-sm">Roadmap</a>
+                                <a href="{{ url_for('skill_gap', career_id=rec['career_id']) }}" class="btn btn-xs btn-outline-teal btn-sm">Skill Gap</a>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Interactive Custom Pair Comparison Form -->
+        <div class="p-3 bg-white border-top">
+            <form method="GET" action="{{ url_for('compare') }}" class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <span class="small fw-bold text-navy"><i class="bi bi-sliders me-1"></i> Custom Comparison Picker:</span>
+                </div>
+                <div class="col-md-4">
+                    <select name="c1" class="form-select form-select-sm">
+                        {% for r in top_3 + remaining[:5] %}
+                        <option value="{{ r['career_id'] }}">#{{ loop.index }} {{ r['display_name'] }} ({{ r['match_score'] }}% Fit)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="c2" class="form-select form-select-sm">
+                        {% for r in top_3 + remaining[:5] %}
+                        <option value="{{ r['career_id'] }}" {% if loop.index == 2 %}selected{% endif %}>#{{ loop.index }} {{ r['display_name'] }} ({{ r['match_score'] }}% Fit)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100" title="Compare Selected Roles">Compare</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- REMAINING SOLID MATCHES (Ranks 4 - 10) -->
+    <div class="card card-tech mb-5 p-4 shadow-sm">
+        <h4 class="fw-bold mb-3"><i class="bi bi-list-check text-primary me-2"></i> Additional Promising Technical Roles (Ranks 4 – 10)</h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Career Title</th>
+                        <th>Category</th>
+                        <th>Match Score</th>
+                        <th>Coding Level</th>
+                        <th>India Benchmark</th>
+                        <th>Key Skill Overlap</th>
+                        <th>Explore</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in remaining %}
+                    <tr>
+                        <td class="fw-bold">#{{ loop.index + 3 }}</td>
+                        <td>
+                            <a href="{{ url_for('career_detail', career_id=rec['career_id']) }}" class="fw-bold text-decoration-none text-dark">
+                                {{ rec['display_name'] }}
+                            </a>
+                        </td>
+                        <td><span class="badge-category">{{ rec['category'] }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold text-primary me-2">{{ rec['match_score'] }}%</span>
+                                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ rec['match_score'] }}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ rec['coding_intensity'] }}</span></td>
+                        <td class="text-muted">{{ rec['median_salary_inr_benchmark'] }}</td>
+                        <td class="text-muted">
+                            {% for s in rec['matched_skills'][:2] %}
+                            <span class="badge bg-light text-success border me-1">{{ s['name'] }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('career_detail', career_id=rec['career_id']) }}" class="btn btn-outline-primary btn-sm">Profile</a>
+                                <a href="{{ url_for('why_not', career_id=rec['career_id']) }}" class="btn btn-outline-secondary btn-sm" title="Why was this ranked lower?">Why Not?</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- "WHY NOT THIS CAREER?" EXPLAINABILITY MODULE -->
+    <div class="card card-tech p-4 mb-4 border-secondary border-opacity-25 bg-white shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-1"><i class="bi bi-question-circle text-info me-2"></i> "Why Not This Career?" — Explainability Inspector</h4>
+                <p class="text-muted small mb-0">Inspect careers that received lower match scores to understand exactly which inputs caused the divergence.</p>
+            </div>
+            <span class="badge bg-light text-dark border p-2">Algorithm Transparency</span>
+        </div>
+
+        <div class="row g-3">
+            {% for rec in lower_ranked[:3] %}
+            <div class="col-md-4">
+                <div class="p-3 border rounded-3 bg-light h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-bold mb-0 text-dark">{{ rec['display_name'] }}</h6>
+                        <span class="badge bg-secondary">{{ rec['match_score'] }}% Match</span>
+                    </div>
+                    <p class="text-muted small mb-2 flex-grow-1">
+                        <strong>Why ranked lower:</strong> {{ rec['why_not_analysis'][0] if rec['why_not_analysis'] else 'Slight mismatch in tools and priority focus.' }}
+                    </p>
+                    <div class="mt-auto pt-2 border-top">
+                        <a href="{{ url_for('why_not', career_id=rec['career_id']) }}" class="btn btn-sm btn-outline-info w-100">
+                            Inspect Diagnostic Breakdown &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if top_3 %}
+    const radarCtx = document.getElementById('topMatchRadarChart');
+    if (radarCtx) {
+        new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Interests', 'Skills', 'Tools', 'Education', 'Preferences'],
+                datasets: [{
+                    label: 'Compatibility Factor %',
+                    data: [
+                        {{ top_3[0]['score_breakdown']['interests'] }},
+                        {{ top_3[0]['score_breakdown']['skills'] }},
+                        {{ top_3[0]['score_breakdown']['tools'] }},
+                        {{ top_3[0]['score_breakdown']['education'] }},
+                        {{ top_3[0]['score_breakdown']['preferences'] }}
+                    ],
+                    backgroundColor: 'rgba(37, 99, 235, 0.25)',
+                    borderColor: '#2563eb',
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        pointLabels: {
+                            font: { size: 10, weight: '600' },
+                            color: '#334155'
+                        },
+                        ticks: { stepSize: 25, display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    const sliders = ['w_interests', 'w_skills', 'w_tools', 'w_education', 'w_work_preferences', 'w_salary'];
+    sliders.forEach(s => {
+        const el = document.getElementById(s);
+        const label = document.getElementById('label_' + s);
+        if (el && label) {
+            el.addEventListener('input', function() {
+                label.textContent = this.value + '%';
+            });
+        }
+    });
+
+    const applyBtn = document.getElementById('applyWeightsBtn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function() {
+            applyBtn.disabled = true;
+            applyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Recalculating...';
+
+            const payload = {
+                interests: document.getElementById('w_interests').value,
+                skills: document.getElementById('w_skills').value,
+                tools: document.getElementById('w_tools').value,
+                education: document.getElementById('w_education').value,
+                work_preferences: document.getElementById('w_work_preferences').value,
+                salary: document.getElementById('w_salary').value,
+                job_outlook: document.getElementById('w_salary').value
+            };
+
+            fetch('/api/recalculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                applyBtn.disabled = false;
+                applyBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Recalculate Live';
+                if (data.status === 'success') {
+                    showToast('Recommendations successfully recalculated with new priority weights!', 'success');
+                    // Reload to reflect new order
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            })
+            .catch(err => {
+                applyBtn.disabled = false;
+                applyBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Recalculate Live';
+                console.error(err);
+            });
+        });
+    }
+
+    const resetBtn = document.getElementById('resetWeightsBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            document.getElementById('w_interests').value = 30;
+            document.getElementById('label_w_interests').textContent = '30%';
+            document.getElementById('w_skills').value = 30;
+            document.getElementById('label_w_skills').textContent = '30%';
+            document.getElementById('w_tools').value = 15;
+            document.getElementById('label_w_tools').textContent = '15%';
+            document.getElementById('w_education').value = 15;
+            document.getElementById('label_w_education').textContent = '15%';
+            document.getElementById('w_work_preferences').value = 10;
+            document.getElementById('label_w_work_preferences').textContent = '10%';
+            document.getElementById('w_salary').value = 0;
+            document.getElementById('label_w_salary').textContent = '0%';
+        });
+    }
+});
+</script>
+{% endblock %}

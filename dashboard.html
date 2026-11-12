@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard — PathWise{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill fw-semibold mb-1">
+                    Student Control Center
+                </span>
+                <h2 class="fw-bold mb-1">Welcome, {{ current_user['full_name'] if current_user else 'Student' }}!</h2>
+                <p class="text-muted small mb-0">Track your technical career exploration, trial lab submissions, and saved learning roadmaps.</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2">
+                <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-sm"><i class="bi bi-ui-checks me-1"></i> Retake Assessment</a>
+                <a href="{{ url_for('trial_lab_index') }}" class="btn btn-warning btn-sm text-dark fw-semibold"><i class="bi bi-flask me-1"></i> Trial Lab</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Stat Counters Grid -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card card-tech p-3 text-center shadow-sm">
+                <div class="text-muted small mb-1">Saved Careers</div>
+                <div class="fs-2 fw-bold text-primary">{{ saved_careers|length }}</div>
+                <small class="text-muted">Target Roles Bookmarked</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card card-tech p-3 text-center shadow-sm">
+                <div class="text-muted small mb-1">Lab Tasks Completed</div>
+                <div class="fs-2 fw-bold text-warning">{{ trials|length }}</div>
+                <small class="text-muted">Demonstrated Practical Tests</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card card-tech p-3 text-center shadow-sm">
+                <div class="text-muted small mb-1">Quest Badges Earned</div>
+                <div class="fs-2 fw-bold text-success">{{ badges|length }}</div>
+                <small class="text-muted">Exploration Milestones</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card card-tech p-3 text-center shadow-sm">
+                <div class="text-muted small mb-1">Assessments Taken</div>
+                <div class="fs-2 fw-bold text-info">{{ assessments|length }}</div>
+                <small class="text-muted">Profile Evaluations</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Assessment Top Match Highlight -->
+    {% if latest and latest.get('results') %}
+    {% set top_role = latest['results'][0] %}
+    <div class="card card-tech p-4 mb-4 border-primary border-opacity-50 shadow-sm bg-white">
+        <div class="row align-items-center g-3">
+            <div class="col-md-8">
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 mb-2">Top Recommendation Highlight</span>
+                <h3 class="fw-bold mb-1 text-dark">{{ top_role['display_name'] }}</h3>
+                <p class="small text-muted mb-3">{{ top_role['description'][:160] }}...</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge-category">{{ top_role['category'] }}</span>
+                    <span class="badge bg-light text-dark border">{{ top_role['coding_intensity'] }} Coding</span>
+                    <span class="badge bg-light text-primary border"><i class="bi bi-currency-rupee"></i> {{ top_role['median_salary_inr_benchmark'] }}</span>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="small text-muted mb-1">Compatibility Score</div>
+                <div class="display-5 fw-extrabold text-primary mb-2">{{ top_role['match_score'] }}%</div>
+                <div class="d-flex justify-content-md-end gap-2">
+                    <a href="{{ url_for('career_detail', career_id=top_role['career_id']) }}" class="btn btn-primary btn-sm">Profile</a>
+                    <a href="{{ url_for('roadmap', career_id=top_role['career_id']) }}" class="btn btn-outline-secondary btn-sm">Roadmap</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Saved Careers Section -->
+    <div class="card card-tech p-4 mb-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-bookmark-star-fill text-primary me-2"></i> Your Bookmarked Careers</h5>
+            <a href="{{ url_for('careers_list') }}" class="btn btn-outline-secondary btn-sm">Explore More Careers</a>
+        </div>
+
+        {% if saved_careers %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Career Title</th>
+                        <th>Category</th>
+                        <th>India Tech Benchmark</th>
+                        <th>Job Outlook</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sc in saved_careers %}
+                    <tr>
+                        <td class="fw-bold text-dark">
+                            <a href="{{ url_for('career_detail', career_id=sc['id']) }}" class="text-decoration-none text-dark">
+                                {{ sc['display_name'] }}
+                            </a>
+                        </td>
+                        <td><span class="badge-category">{{ sc['category'] }}</span></td>
+                        <td class="text-primary fw-semibold">{{ sc['median_salary_inr_benchmark'] }}</td>
+                        <td><span class="badge bg-success">+{{ sc['job_outlook_pct'] }}%</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('career_detail', career_id=sc['id']) }}" class="btn btn-outline-primary">Details</a>
+                                <a href="{{ url_for('roadmap', career_id=sc['id']) }}" class="btn btn-outline-secondary">Roadmap</a>
+                                <a href="{{ url_for('skill_gap', career_id=sc['id']) }}" class="btn btn-outline-secondary">Skill Gap</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 bg-light rounded text-muted small">
+            <i class="bi bi-bookmark fs-2 text-secondary d-block mb-2"></i>
+            You haven't bookmarked any careers yet. Explore the <a href="{{ url_for('careers_list') }}">38 careers</a> and click the bookmark button!
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Trial Lab Results -->
+    <div class="card card-tech p-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-flask text-warning me-2"></i> Practical Lab Task Records</h5>
+            <a href="{{ url_for('evidence_check') }}" class="btn btn-outline-success btn-sm"><i class="bi bi-check2-circle me-1"></i> Skill Evidence Check</a>
+        </div>
+
+        {% if trials %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Domain Track</th>
+                        <th>Score</th>
+                        <th>Feedback Summary</th>
+                        <th>Date Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in trials %}
+                    <tr>
+                        <td class="fw-semibold">{{ t['career_track'].replace('_', ' ').title() }}</td>
+                        <td><span class="badge bg-primary fs-6">{{ t['score'] }} / {{ t['max_score'] }}</span></td>
+                        <td class="text-muted">{{ t['feedback'] }}</td>
+                        <td class="text-secondary">{{ t['completed_at'][:10] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="small text-muted mb-0">No lab tasks attempted yet. Visit the <a href="{{ url_for('trial_lab_index') }}">Career Trial Lab</a> to test your problem-solving skills.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

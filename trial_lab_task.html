@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ track['title'] }} — PathWise Trial Lab{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-2">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('trial_lab_index') }}">Trial Lab</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ track['title'] }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-semibold mb-1">
+                    <i class="bi bi-flask-fill me-1"></i> Hands-On Practical Simulation
+                </span>
+                <h2 class="fw-bold mb-1">{{ track['title'] }}</h2>
+                <p class="text-muted small mb-0">{{ track['overview'] }}</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <a href="{{ url_for('career_detail', career_id=track['career_id']) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-person-badge me-1"></i> {{ track['career_name'] }} Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Interactive Artifact Card depending on track -->
+    {% if track['track_id'] == 'data_analyst' %}
+    <div class="card card-tech mb-4 p-4 shadow-sm border-info">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-info"><i class="bi bi-table me-2"></i> Operational Dataset: College Cafeteria Weekly Transactions</h5>
+            <span class="badge bg-light text-muted border">Sample CSV / SQL View</span>
+        </div>
+        <p class="small text-muted mb-3">Inspect the dataset columns and values below to answer the diagnostic analysis questions.</p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped small mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Day</th>
+                        <th>Total Orders</th>
+                        <th>Revenue (INR)</th>
+                        <th>Avg Order Value</th>
+                        <th>Dominant Payment Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in track['dataset_sample'] %}
+                    <tr>
+                        <td class="fw-semibold">{{ row['Day'] }}</td>
+                        <td>{{ row['Total_Orders'] }}</td>
+                        <td class="text-success fw-bold">₹{{ "{:,}".format(row['Revenue_INR']) }}</td>
+                        <td>₹{{ row['Avg_Order_Value'] }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ row['Payment_Method'] }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% elif track['track_id'] == 'software_developer' %}
+    <div class="card card-tech mb-4 p-4 shadow-sm border-primary">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-code-square me-2"></i> Code Inspection: Python Cart Discount Function</h5>
+            <span class="badge bg-dark font-monospace text-warning">discount_calculator.py</span>
+        </div>
+        <p class="small text-muted mb-2">Review this Python function implementation for potential edge case logic bugs.</p>
+        <div class="bg-dark text-light p-3 rounded-3 font-monospace small" style="line-height: 1.6;">
+            <pre class="mb-0 text-info"><code>{{ track['code_snippet'] }}</code></pre>
+        </div>
+    </div>
+    {% elif track['track_id'] == 'cybersecurity' %}
+    <div class="card card-tech mb-4 p-4 shadow-sm border-danger">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-envelope-exclamation me-2"></i> Security Incident Triage: Suspicious Email Artifact</h5>
+            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">Tier-1 Incident Alert</span>
+        </div>
+        <p class="small text-muted mb-2">A student reported this email to the campus CERT team. Analyze the raw headers and body:</p>
+        <div class="bg-light p-3 rounded-3 border font-monospace small" style="white-space: pre-wrap;">{{ track['scenario_text'] }}</div>
+    </div>
+    {% elif track['track_id'] == 'ui_ux' %}
+    <div class="card card-tech mb-4 p-4 shadow-sm border-warning">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-warning"><i class="bi bi-phone me-2"></i> UX Heuristic Critique: College Mobile Registration Flow</h5>
+            <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-25">Usability Audit</span>
+        </div>
+        <p class="small text-muted mb-2">The department has received student complaints about the semester exam form. Review the heuristic findings:</p>
+        <div class="bg-light p-3 rounded-3 border small" style="white-space: pre-wrap;">{{ track['ui_critique_scenario'] }}</div>
+    </div>
+    {% endif %}
+
+    <!-- LAB QUESTIONS FORM -->
+    <form id="labForm">
+        {% for q in track['questions'] %}
+        <div class="card card-tech p-4 mb-4 shadow-sm">
+            <h5 class="fw-bold mb-3 text-dark">
+                <span class="badge bg-primary text-white rounded-pill px-2 py-1 me-2">{{ loop.index }}</span>
+                {{ q['question'] }}
+            </h5>
+
+            <div class="row g-2 mb-2">
+                {% for opt in q['options'] %}
+                <div class="col-12">
+                    <input type="radio" class="btn-check option-card-input" name="{{ q['id'] }}" value="{{ opt['val'] }}" id="{{ q['id'] }}_{{ opt['val'] }}" required>
+                    <label class="option-card-label" for="{{ q['id'] }}_{{ opt['val'] }}">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-dark border me-3 px-2 py-1 fw-bold">{{ opt['val'] }}</span>
+                            <span class="small fw-medium text-dark">{{ opt['text'] }}</span>
+                        </div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Feedback reveal block (hidden until submitted) -->
+            <div class="feedback-block mt-3 d-none" id="feedback_{{ q['id'] }}">
+                <div class="p-3 rounded-3 small">
+                    <div class="fw-bold mb-1 feedback-title"></div>
+                    <div class="feedback-text text-muted"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Submit & Results Action Card -->
+        <div class="card card-tech p-4 mb-4 shadow-sm" id="submitActionCard">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div>
+                    <h5 class="fw-bold mb-1">Ready to Evaluate Your Lab Responses?</h5>
+                    <p class="small text-muted mb-0">Answers will be evaluated instantly and verified against your profile evidence.</p>
+                </div>
+                <div class="mt-3 mt-md-0">
+                    <button type="button" class="btn btn-success px-4 py-2 fw-bold" id="submitLabBtn">
+                        <i class="bi bi-check2-circle me-1"></i> Submit Lab Task
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Summary Modal/Card (Hidden until submitted) -->
+        <div class="card card-tech p-4 mb-4 shadow-lg border-success d-none" id="resultsSummaryCard">
+            <div class="text-center mb-3">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center p-3 mb-2">
+                    <i class="bi bi-award-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold mb-1" id="scoreDisplay"></h3>
+                <p class="text-muted" id="summaryFeedbackText"></p>
+                <div class="badge bg-warning text-dark px-3 py-2 fs-6 mb-3 d-none" id="badgeAwardAlert">
+                    <i class="bi bi-trophy-fill me-1"></i> Quest Badge Unlocked: <span id="unlockedBadgeTitle"></span>!
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-center gap-3 pt-3 border-top">
+                <a href="{{ url_for('evidence_check') }}" class="btn btn-outline-success fw-semibold">
+                    <i class="bi bi-check2-circle me-1"></i> View Self-Rating vs Evidence Check
+                </a>
+                <a href="{{ url_for('career_detail', career_id=track['career_id']) }}" class="btn btn-primary fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i> Explore {{ track['career_name'] }} Profile
+                </a>
+                <a href="{{ url_for('trial_lab_index') }}" class="btn btn-outline-secondary">
+                    All Practical Labs
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const trackId = "{{ track['track_id'] }}";
+    const submitBtn = document.getElementById('submitLabBtn');
+    const form = document.getElementById('labForm');
+
+    submitBtn.addEventListener('click', function() {
+        const formData = new FormData(form);
+        const answers = {};
+        let allAnswered = true;
+
+        {% for q in track['questions'] %}
+        if (!formData.get("{{ q['id'] }}")) {
+            allAnswered = false;
+        } else {
+            answers["{{ q['id'] }}"] = formData.get("{{ q['id'] }}");
+        }
+        {% endfor %}
+
+        if (!allAnswered) {
+            alert("Please answer all questions before submitting your practical lab task.");
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Validating...';
+
+        fetch('/api/submit-lab', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ track_id: trackId, answers: answers })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Reveal explanations for each question
+            data.feedback_items.forEach(item => {
+                const fbBlock = document.getElementById('feedback_' + item.id);
+                if (fbBlock) {
+                    fbBlock.classList.remove('d-none');
+                    const innerBox = fbBlock.querySelector('.small');
+                    const titleEl = fbBlock.querySelector('.feedback-title');
+                    const textEl = fbBlock.querySelector('.feedback-text');
+
+                    if (item.is_correct) {
+                        innerBox.className = 'p-3 rounded-3 small bg-success bg-opacity-10 border border-success border-opacity-25';
+                        titleEl.className = 'fw-bold mb-1 text-success';
+                        titleEl.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Correct Answer (' + item.correct_answer + ')';
+                    } else {
+                        innerBox.className = 'p-3 rounded-3 small bg-danger bg-opacity-10 border border-danger border-opacity-25';
+                        titleEl.className = 'fw-bold mb-1 text-danger';
+                        titleEl.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Incorrect. Correct Answer was (' + item.correct_answer + ')';
+                    }
+                    textEl.textContent = item.explanation;
+                }
+            });
+
+            // Show results summary
+            document.getElementById('submitActionCard').classList.add('d-none');
+            const summaryCard = document.getElementById('resultsSummaryCard');
+            summaryCard.classList.remove('d-none');
+
+            document.getElementById('scoreDisplay').textContent = 'Your Score: ' + data.score + ' / ' + data.max_score + ' (' + data.percentage + '%)';
+            document.getElementById('summaryFeedbackText').textContent = data.summary;
+
+            if (data.badge_awarded) {
+                const badgeAlert = document.getElementById('badgeAwardAlert');
+                document.getElementById('unlockedBadgeTitle').textContent = data.badge_title;
+                badgeAlert.classList.remove('d-none');
+            }
+
+            summaryCard.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Submit Lab Task';
+            console.error(err);
+        });
+    });
+});
+</script>
+{% endblock %}

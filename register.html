@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Registration — PathWise{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card card-tech shadow-lg p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="p-3 rounded-circle bg-success bg-opacity-10 text-success d-inline-flex mb-2">
+                        <i class="bi bi-person-plus fs-3"></i>
+                    </span>
+                    <h3 class="fw-bold mb-1">Create Student Profile</h3>
+                    <p class="text-muted small">Register to track your technical career recommendations and trial lab achievements.</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="full_name" class="form-label small fw-semibold">Full Name *</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" placeholder="e.g. Rahul Sharma" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="username" class="form-label small fw-semibold">Username *</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="e.g. rahul_bca" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label small fw-semibold">College / University Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="rahul@student.edu.in" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label small fw-semibold">Create Password *</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="At least 6 characters" minlength="6" required>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="qualification" class="form-label small fw-semibold">Current Degree</label>
+                            <select class="form-select" id="qualification" name="qualification">
+                                <option value="BCA" selected>BCA (Bachelor of Computer Applications)</option>
+                                <option value="B.Sc Computer Science">B.Sc Computer Science / IT</option>
+                                <option value="B.Tech CSE">B.Tech Computer Science</option>
+                                <option value="MCA">MCA (Master of Computer Applications)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="current_semester" class="form-label small fw-semibold">Current Semester</label>
+                            <select class="form-select" id="current_semester" name="current_semester">
+                                <option value="Semester 1">Semester 1</option>
+                                <option value="Semester 2">Semester 2</option>
+                                <option value="Semester 3" selected>Semester 3</option>
+                                <option value="Semester 4">Semester 4</option>
+                                <option value="Semester 5">Semester 5</option>
+                                <option value="Semester 6">Semester 6</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="college" class="form-label small fw-semibold">University / Institution</label>
+                        <input type="text" class="form-control" id="college" name="college" value="Manav Rachna International Institute of Research and Studies" required>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary py-2 fw-semibold">Complete Registration</button>
+                    </div>
+
+                    <div class="text-center small text-muted">
+                        Already have an account? <a href="{{ url_for('login') }}" class="text-primary fw-semibold">Sign in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
